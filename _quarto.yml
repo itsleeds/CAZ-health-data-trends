@@ -3,8 +3,10 @@ project:
 
 website:
   title: "CAZ Health Indicators Trends"
-  navbar:
-    left:
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
       - href: qmds_ghpages/index.qmd
         text: Home
       - section: Data
@@ -14,7 +16,7 @@ website:
           - href: qmds_ghpages/practice_data.qmd
             text: GP Practices
           - href: qmds_ghpages/prescription_data.qmd
-            text: Prescription data
+            text: Prescriptions
         
       - qmds_ghpages/about.qmd
 

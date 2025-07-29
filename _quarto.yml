@@ -1,0 +1,21 @@
+project:
+  type: website
+
+website:
+  title: "CAZ Health Indicators Trends"
+  navbar:
+    left:
+      - href: qmds_ghpages/index.qmd
+        text: Home
+      - qmds_ghpages/about.qmd
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+    toc: true
+
+
+

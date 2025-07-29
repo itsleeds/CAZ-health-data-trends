@@ -1,0 +1,92 @@
+
+# Clean Air Zones (CAZ)
+
+```{r,message=FALSE}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) install.packages("remotes")
+pkgs = c(
+    "sf",
+    "tidyverse",
+    "here",
+    "tmap"
+)
+
+remotes::install_cran(pkgs)
+sapply(pkgs, require, character.only = TRUE)
+```
+
+## Downloading data
+
+### Boundaries
+
+The boundaries have been obtained manually from the different official repositories and compiled in a
+single `gpkg` file. The url to the sources is available in the metadata file.
+
+```{r}
+#| label: download-boundaries
+
+dir.create("data_raw",showWarnings = F)
+if (!file.exists("data_raw/CAZ_boundaries.gpkg")){
+  u <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/CAZ_boundaries.gpkg"
+  f <- basename(u)
+  download.file(u,destfile = file.path("data_raw",f),mode = "wb",)
+}
+```
+
+### Meta-data
+
+```{r}
+#| label: download-metadata-caz
+
+if (!file.exists("data_raw/CAZ_list.csv")){
+  u <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/CAZ_list.csv"
+  f <- basename(u)
+  download.file(u,destfile = file.path("data_raw",f),mode = "wb",)
+}
+```
+
+## Loading Data
+
+```{r}
+#| label: load-boundaries-n-metadata
+caz_boundaries <- st_read(file.path(here(),"data_raw","CAZ_boundaries.gpkg"))
+caz_metadata <- read_csv(file.path(here(),"data_raw","CAZ_list.csv"))
+```
+
+## Processing Buffers
+
+```{r}
+#| label: make-buffers
+
+buffers <- c(0,0.5,1,5,10)*1e3
+
+caz_buffers <- lapply(buffers, \(buff_dist) {
+  st_buffer(caz_boundaries, dist = buff_dist) |>
+    mutate(buffer_km = buff_dist / 1e3)
+}) |>
+  bind_rows()
+```
+
+```{r}
+#| label: save-buffers
+
+st_write(caz_buffers,file.path(here(),"data_raw","CAZ_buffers.gpkg"),append = FALSE)
+```
+
+A quick visualisation
+
+```{r}
+#| label: map-buffers
+
+tmap_mode("view")
+
+tm_shape(caz_buffers |> arrange(-buffer_km))+
+  tm_polygons("buffer_km",
+              fill_alpha = 0.4,
+              fill.scale = tm_scale_discrete(ticks = buffers/1e3,
+                                             values = "-brewer.blues")
+              )
+```

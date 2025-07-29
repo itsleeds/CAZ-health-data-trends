@@ -1,0 +1,273 @@
+# GP Practices
+
+
+```{r,message=FALSE}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) install.packages("remotes")
+pkgs = c(
+    "sf",
+    "tidyverse",
+    "here",
+    "tmap",
+    "geojsonsf",
+    "rvest"
+)
+
+remotes::install_cran(pkgs)
+sapply(pkgs, require, character.only = TRUE)
+```
+
+## Loading spatial data
+
+### Sub-ICB 
+
+```{r}
+#| label: download-ccg-boundaries
+#| warning: false
+
+if (!file.exists("data_raw/subicb_boundaries.gpkg")){
+  
+  u <- "https://openprescribing.net/api/1.0/org_location/?org_type=ccg"
+  subicb_boundaries <- geojsonsf::geojson_sf(u) |>
+    st_transform(27700)
+  
+  st_write(subicb_boundaries,
+           dsn = file.path(here(),"data_raw","subicb_boundaries.gpkg")
+           )
+} else{
+  subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
+}
+```
+
+### GP practices
+
+Obtaining the location of GP practices from OpenPrescribing for each Sub-ICB
+
+```{r}
+#| label: download-gp-locations
+#| warning: false
+
+if (!file.exists("data_raw/gp_locations.gpkg")){
+  
+  all_practices <- lapply(subicb_boundaries$code,
+                              \(t_code) {
+                                geojsonsf::geojson_sf(
+                                  paste0("https://openprescribing.net/api/1.0/org_location/?q=",
+                                         t_code)) |>
+                                  st_transform(27700) |> 
+                                  mutate(par_code = t_code)
+  }) |> 
+    bind_rows()
+  
+  st_write(all_practices,
+           dsn = file.path(here(),"data_raw","gp_locations.gpkg")
+           )
+} else{
+  all_practices <- st_read(file.path(here(),"data_raw","gp_locations.gpkg"))
+}
+```
+
+
+### Classification based on location from CAZ
+
+```{r}
+#| label: load-caz-buffers
+
+caz_buffers <- st_read(file.path(here(),"data_raw","CAZ_buffers.gpkg"))
+```
+
+Sub-setting the practices within the buffers
+```{r}
+#| label: subset-practices
+
+caz_practices <- all_practices[caz_buffers,]
+```
+
+
+Detecting intersections and extracting the minimum buffer size
+```{r}
+#| label: practices-classification
+
+practices_intersects <- st_intersects(caz_practices,caz_buffers)
+
+caz_practices$buffer_km <- vapply(practices_intersects,
+       \(caz_index){ caz_buffers$buffer_km[caz_index] |> min()},
+       FUN.VALUE = numeric(1))
+
+caz_practices$CAZ_name <- vapply(practices_intersects,
+       \(caz_index){caz_buffers$name[caz_index][which.min(caz_buffers$buffer_km[caz_index])]},
+       FUN.VALUE = character(1))
+```
+
+```{r}
+#| label: map-practices
+
+tmap_mode("view")
+buffers <- c(0,0.5,1,5,10)*1e3
+
+tm_shape(caz_buffers |> arrange(-buffer_km))+
+  tm_polygons("buffer_km",
+              fill_alpha = 0.4,
+              fill.scale = tm_scale_discrete(ticks = buffers/1e3,
+                                             values = "-brewer.blues")
+              )+
+tm_shape(caz_practices)+
+  tm_dots("CAZ_name")
+
+```
+
+
+## Registered patients data
+
+From the NHS we can extract total number of patients registered after each month.
+This code downloads all monthly reports programmatically, extracts the zip files, and saves a consolidated dataset as a csv file.
+
+```{r}
+#| label: download-resgistere-patients
+
+if (!file.exists(file.path(here(),"data_raw","practice_patients.csv"))){
+  
+  get_patients <- function(){
+  base_u <- "https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/"
+  
+  my_grid <- expand.grid(month = tolower(month.name), year = 2020:2024)
+  my_grid$u <- paste(my_grid$month, my_grid$year, sep = "-")
+  
+  folder_path <- "gp_patients"
+  
+  dir.create(path = folder_path, showWarnings = F)
+  
+  cur_files <- tools::file_path_sans_ext(list.files(folder_path))
+  
+  my_grid <- my_grid[!(my_grid$u %in% cur_files), ]
+  
+  for (i in my_grid$u) {
+    print(paste0(base_u, i))
+    w <- read_html(paste0(base_u, i))
+    
+    links <- w  |> html_nodes("a")  |> html_attr("href")
+    
+    my_link <- links[grep(links, pattern = "gp-reg-pat-prac-all")]
+    
+    download.file(
+      url = my_link,
+      destfile = paste0(folder_path, "/", i, ".", tools::file_ext(my_link)),
+      mode = "wb"
+    )
+    
+    Sys.sleep(rnorm(1, mean = 5))
+  }
+  
+  # List all ZIP files in the folder
+  zip_files <- list.files(path = folder_path,
+                          pattern = "\\.zip$",
+                          full.names = TRUE)
+  
+  # Extract each ZIP file
+  lapply(zip_files, function(zip_file) {
+    # Create a temporary directory for extraction
+    temp_dir <- tempfile()
+    dir.create(temp_dir)
+    
+    # Extract the ZIP file into the temporary directory
+    unzip(zip_file, exdir = temp_dir)
+    
+    # List extracted files
+    extracted_files <- list.files(path = temp_dir, full.names = TRUE)
+    
+    # Move and rename each extracted file to the original folder
+    lapply(extracted_files, function(file) {
+      file_extension <- tools::file_ext(file)
+      new_name <- file.path(folder_path,
+                            paste0(
+                              tools::file_path_sans_ext(basename(zip_file)),
+                              ".",
+                              file_extension
+                            ))
+      file.rename(file, new_name)
+    })
+    
+    
+    # Remove the temporary directory
+    unlink(temp_dir, recursive = TRUE)
+  })
+  
+  
+  
+  all_data <- lapply(list.files(
+    path = "gp_patients",
+    pattern = "\\.csv$",
+    full.names = T
+  ),
+  \(x) {
+    read_csv(x) |>
+      mutate(
+        month = str_extract(basename(x), "[a-zA-Z]+(?=-)"),
+        year = str_extract(basename(x), "\\d{4}")
+      )
+  })
+  
+  
+  common_names <- reduce(lapply(all_data, names), intersect)
+  
+  all_data_df <- do.call(rbind, lapply(all_data, \(x) {
+    x[, common_names]
+  })) |>
+    mutate(year = as.integer(year))
+  
+  write_csv(all_data_df,
+            file = file.path(here(),"data_raw","practice_patients.csv"))
+  
+  }
+  
+  
+  get_patients()
+  
+  
+} else{
+  all_data_df <- read_csv(file.path(here(),"data_raw","practice_patients.csv"),
+                          col_types = cols(
+  PUBLICATION = col_character(),
+  EXTRACT_DATE = col_character(),
+  TYPE = col_character(),
+  CODE = col_character(),
+  POSTCODE = col_character(),
+  SEX = col_character(),
+  AGE = col_character(),
+  NUMBER_OF_PATIENTS = col_double(),
+  month = col_character(),
+  year = col_double()
+))
+}
+
+```
+
+### Visualisation
+
+```{r}
+#| label: map-practice-size
+tmap_mode("plot")
+
+
+sf_practices_size <- all_practices |>
+  left_join(all_data_df |> 
+  summarise(across(NUMBER_OF_PATIENTS,\(x) median(x,na.rm = T)),.by = CODE),
+  by = c("code" = "CODE"))
+
+sf_practices_size |> 
+  filter(NUMBER_OF_PATIENTS<= quantile(NUMBER_OF_PATIENTS,0.9,na.rm = T)) |> 
+  arrange(-NUMBER_OF_PATIENTS) |> 
+tm_shape()+
+  tm_symbols(fill = "NUMBER_OF_PATIENTS",
+          size = "NUMBER_OF_PATIENTS",
+          col = NA,
+          size.scale = tm_scale_continuous(values.scale = 0.5),
+          size.legend = tm_legend_hide(),
+          # fill_alpha = 0.4,
+          fill.scale = tm_scale_intervals(n = 5, values = "-tol.rainbow_wh_br"))
+```
+
+

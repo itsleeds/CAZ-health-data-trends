@@ -4,6 +4,10 @@
 .Ruserdata
 
 .quarto/
-
 .quarto/*
 
+data_raw/
+data_raw/*
+
+gp_patients/
+gp_patients/*

@@ -7,6 +7,15 @@ website:
     left:
       - href: qmds_ghpages/index.qmd
         text: Home
+      - section: Data
+        contents:
+          - href: qmds_ghpages/CAZ_definition.qmd
+            text: Clean Air Zones
+          - href: qmds_ghpages/practice_data.qmd
+            text: GP Practices
+          - href: qmds_ghpages/prescription_data.qmd
+            text: Prescription data
+        
       - qmds_ghpages/about.qmd
 
 format:

@@ -35,7 +35,8 @@ if (!file.exists("data_raw/subicb_boundaries.gpkg")){
     st_transform(27700)
   
   st_write(subicb_boundaries,
-           dsn = file.path(here(),"data_raw","subicb_boundaries.gpkg")
+           dsn = file.path(here(),"data_raw","subicb_boundaries.gpkg"),
+           append = FALSE
            )
 } else{
   subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
@@ -63,7 +64,8 @@ if (!file.exists("data_raw/gp_locations.gpkg")){
     bind_rows()
   
   st_write(all_practices,
-           dsn = file.path(here(),"data_raw","gp_locations.gpkg")
+           dsn = file.path(here(),"data_raw","gp_locations.gpkg"),
+           append = FALSE
            )
 } else{
   all_practices <- st_read(file.path(here(),"data_raw","gp_locations.gpkg"))

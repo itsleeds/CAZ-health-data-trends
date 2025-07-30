@@ -121,6 +121,14 @@ tm_shape(caz_practices)+
 
 ```
 
+```{r}
+#| label: save-caz-sf
+
+st_write(caz_practices,
+         dsn = file.path(here(),"data_raw","CAZ_practices.gpkg"),
+         append = FALSE)
+```
+
 
 ## Registered patients data
 
@@ -271,5 +279,7 @@ tm_shape()+
           # fill_alpha = 0.4,
           fill.scale = tm_scale_intervals(n = 5, values = "-tol.rainbow_wh_br"))
 ```
+
+
 
 

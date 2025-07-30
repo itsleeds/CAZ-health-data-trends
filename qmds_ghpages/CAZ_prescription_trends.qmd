@@ -1,0 +1,151 @@
+---
+title: "CAZ_prescription_trends"
+---
+
+```{r}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) install.packages("remotes")
+pkgs = c(
+    "sf",
+    "tidyverse",
+    "here",
+    "tmap"
+)
+
+```
+
+## Loading data
+
+### GP practices
+```{r}
+#| label: read-data-pract
+
+pract_classed <- st_read("data_raw/CAZ_practices.gpkg")
+CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
+```
+
+### Patient data
+
+```{r}
+#| label: read-data-patients
+
+patient_num_df <- read_csv("data_raw/practice_patients.csv")
+
+patient_num_df$month <- match(patient_num_df$month,tolower(month.name))
+```
+
+### Prescription data
+
+```{r}
+#| label: read-data-prescr
+
+all_saba_raw <- read_csv(file = file.path(here(),"data_raw","all_saba.csv"))
+```
+
+
+## Preparing data
+
+```{r}
+CAZ_practices <- pract_classed |>
+  mutate(location_class = case_when(buffer_km==0~"within_CAZ",
+                                    buffer_km<=1~"within_1km",
+                                    buffer_km<=5~"within_5km",
+                                    TRUE~"out_CAZ")) |> 
+  mutate(location_class = factor(location_class,
+                                 levels = c("within_CAZ","within_1km","within_5km","out_CAZ"),
+                                 ordered = T)) 
+  
+CAZ_patients <- patient_num_df |> filter(CODE %in% CAZ_practices$code)
+
+CAZ_SABA <- all_saba_raw |> 
+  filter(org_id %in% CAZ_practices$code) |> 
+  mutate(month = month(date),
+         year = year(date)) |> 
+  left_join(CAZ_patients,by = c("org_id" = "CODE","month","year"))
+```
+
+
+## Visualising trends
+
+### SABA numerator
+
+```{r}
+plots_SABA_ratio <- CAZ_SABA |> 
+  left_join(CAZ_practices |> st_drop_geometry() |> 
+              select(code,location_class,CAZ_name),by = c("org_id"="code")) |> 
+  summarise(across(c(NUMBER_OF_PATIENTS,numerator,denominator),\(x) sum(x,na.rm = T)),
+            .by = c(location_class,CAZ_name,month,year,date)) |>
+  mutate(calc_value = numerator/denominator) |> 
+  nest(.by = c(CAZ_name)) |> 
+  left_join(CAZ_lst |> select(CAZ,Start),by = c("CAZ_name"= "CAZ")) |> 
+  mutate(trend_data = map2(data,Start,
+                           \(.x,.y){
+                             .x |> 
+                               filter(year>=.y)
+                           })) |> 
+  mutate(ratio_plots = map2(data,trend_data,
+                      \(.x, .y){
+                        .x |> ggplot(aes(x = date, y = calc_value,colour = location_class))+
+                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
+                          geom_smooth(data = .y,
+                                      method = "lm", se = F)+
+                          theme_minimal()+
+                          scale_color_brewer(palette = "Set1")+
+                          scale_y_continuous(limits = c(0,0.7))
+  }),
+  ratio_plots = map2(ratio_plots,CAZ_name,\(.x,.y){
+    .x + labs(title = .y,
+              y = "SABA ratio",
+              col = "Location Class",
+              x = "")}
+              )) |> 
+  mutate(denom_plots = map2(data,trend_data,
+                      \(.x, .y){
+                        .x |> ggplot(aes(x = date, y = denominator/NUMBER_OF_PATIENTS,colour = location_class))+
+                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
+                          geom_smooth(data = .y,
+                                      method = "lm", se = F)+
+                          theme_minimal()+
+                          scale_color_brewer(palette = "Set1")
+  }),
+  denom_plots = map2(denom_plots,CAZ_name,\(.x,.y){
+    .x + labs(title = .y,
+              y = "Prescr/Num patients",
+              col = "Location Class",
+              x = "")}
+              )) |> 
+  mutate(num_plots = map2(data,trend_data,
+                      \(.x, .y){
+                        .x |> ggplot(aes(x = date, y = numerator/NUMBER_OF_PATIENTS,colour = location_class))+
+                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
+                          geom_smooth(data = .y,
+                                      method = "lm", se = F)+
+                          theme_minimal()+
+                          scale_color_brewer(palette = "Set1")
+  }),
+  num_plots = map2(num_plots,CAZ_name,\(.x,.y){
+    .x + labs(title = .y,
+              y = "Prescr/Num patients",
+              col = "Location Class",
+              x = "")}
+              ))
+
+plots_SABA_ratio$ratio_plots
+
+```
+
+## SABA numerator
+
+```{r}
+plots_SABA_ratio$num_plots
+```
+### SABA denominator (all inhalers)
+```{r}
+plots_SABA_ratio$denom_plots
+```
+
+
+

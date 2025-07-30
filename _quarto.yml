@@ -1,5 +1,6 @@
 project:
   type: website
+  execute-dir: project
 
 execute: 
   freeze: auto  # re-render only when source changes
@@ -20,6 +21,12 @@ website:
             text: GP Practices
           - href: qmds_ghpages/prescription_data.qmd
             text: Prescriptions
+          - href: qmds_ghpages/fingertips_data.qmd
+            text: Health indicators
+      - section: Analysis
+        contents:
+          - href: qmds_ghpages/CAZ_prescription_trends.qmd
+            text: Trends by practice location
       - qmds_ghpages/about.qmd
 
 format:

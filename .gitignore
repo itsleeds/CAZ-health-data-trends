@@ -13,5 +13,8 @@ gp_patients/
 gp_patients/*
 /.quarto/
 
+_site/*
 _site/
-_site 
+
+_freeze/*
+_freeze/

@@ -3,3 +3,104 @@ title: "prescription_data"
 format: html
 ---
 
+```{r}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) install.packages("remotes")
+pkgs = c(
+    "sf",
+    "tidyverse",
+    "here",
+    "tmap",
+    "geojsonsf",
+    "rvest"
+)
+
+remotes::install_cran(pkgs)
+sapply(pkgs, require, character.only = TRUE)
+```
+
+
+## Downloading data
+
+```{r}
+subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
+```
+
+### SABA
+
+```{r}
+#| label: download-saba
+#| message: false
+
+if (!file.exists(file.path(here(),"data_raw","all_saba.csv"))){
+  all_saba_raw <- do.call(bind_rows, lapply(subicb_boundaries$code, \(t_code) {
+    read_csv(
+      paste0(
+        "https://openprescribing.net/api/1.0/measure_by_practice/?format=csv&org=",
+        t_code,
+        "&parent_org_type=ccg&measure=saba"
+      ),
+      col_types = cols(
+        measure = col_character(),
+        org_type = col_character(),
+        org_id = col_character(),
+        org_name = col_character(),
+        date = col_date(format = ""),
+        numerator = col_double(),
+        denominator = col_double(),
+        calc_value = col_double(),
+        percentile = col_double()
+      )
+    )
+  }))
+  write_csv(all_saba_raw,file = file.path(here(),"data_raw","all_saba.csv"))
+} else{
+  all_saba_raw <- read_csv(file = file.path(here(),"data_raw","all_saba.csv"))
+}
+```
+
+## All BFN groups
+
+Downloading the data for all BFN groups (API limits might apply)
+
+```{r}
+#| label: download-all
+
+base_u <- "https://openprescribing.net/bnf/"
+bnf_site <- read_html(base_u)
+
+links <- bnf_site  |> html_nodes("a")  |> html_attr("href")
+links <- links[grep("/bnf/\\d{2,6}/$",links)] |> str_remove("/bnf/") |> str_remove("/$")
+links <- links[order(nchar(links))]
+
+dates <- seq(as.Date("2020-06-01"),as.Date("2025-03-01"),"months")
+
+full_data_grid <- expand_grid(code = links, date = dates) |> mutate(group = nchar(code),
+                                                                    file.name = paste0(code,"_",date,".csv"))
+
+write_rds(full_data_grid,file = "data_raw/full_bnf_grid.rds")
+
+limit_group2 <- full_data_grid |> filter(group == 2) |> nrow()
+
+
+## This is to be run 
+dir.create("data_raw/bnf_all",showWarnings = F)
+all_bnf_codes <- lapply(seq_len(limit_group2),
+                        \(x){
+  
+  if(!file.exists(file.path("data_raw","bnf_all",full_data_grid$file.name[x]))){                        
+  download.file(paste0("https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
+       full_data_grid$code[x],
+       "&date=",
+       full_data_grid$date[x],
+       "&format=csv"),
+       destfile = file.path("data_raw","bnf_all",full_data_grid$file.name[x]),mode = "wb")}
+        
+
+})   
+```
+
+

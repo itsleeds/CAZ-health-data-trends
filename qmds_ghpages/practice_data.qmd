@@ -1,7 +1,7 @@
 # GP Practices
 
 
-```{r,message=FALSE}
+```{r}
 #| label: packages
 #| message: false
 

@@ -2,11 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/prescription_data.html</loc>
-    <lastmod>2025-07-29T15:47:24.947Z</lastmod>
+    <lastmod>2025-07-30T10:01:00.869Z</lastmod>
   </url>
   <url>
     <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/index.html</loc>
     <lastmod>2025-07-29T15:47:24.945Z</lastmod>
+  </url>
+  <url>
+    <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/CAZ_prescription_trends.html</loc>
+    <lastmod>2025-07-30T10:11:32.141Z</lastmod>
   </url>
   <url>
     <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/about.html</loc>
@@ -14,7 +18,11 @@
   </url>
   <url>
     <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/CAZ_definition.html</loc>
-    <lastmod>2025-07-29T15:47:24.944Z</lastmod>
+    <lastmod>2025-07-29T15:54:08.791Z</lastmod>
+  </url>
+  <url>
+    <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/fingertips_data.html</loc>
+    <lastmod>2025-07-30T10:12:41.999Z</lastmod>
   </url>
   <url>
     <loc>https://itsleeds.github.io/CAZ-health-data-trends/qmds_ghpages/practice_data.html</loc>

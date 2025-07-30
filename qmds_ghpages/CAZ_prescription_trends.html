@@ -256,6 +256,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">"remotes"</span>)) <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">=</span> <span class="fu">c</span>(</span>
@@ -267,6 +269,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_cran</span>(pkgs)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(pkgs, require, <span class="at">character.only =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>       sf tidyverse      here      tmap 
      TRUE      TRUE      TRUE      TRUE </code></pre>
@@ -277,7 +280,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="gp-practices" class="level3">
 <h3 class="anchored" data-anchor-id="gp-practices">GP practices</h3>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pract_classed <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data_raw/CAZ_practices.gpkg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `CAZ_practices' from data source 
   `C:\temp_jf\CAZ-health-data-trends\data_raw\CAZ_practices.gpkg' 
@@ -288,7 +294,10 @@ Dimension:     XY
 Bounding box:  xmin: 346814 ymin: 91824 xmax: 472242 ymax: 574443
 Projected CRS: OSGB36 / British National Grid</code></pre>
 </div>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>CAZ_lst <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data_raw/CAZ_list.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 14 Columns: 6
 ── Column specification ────────────────────────────────────────────────────────
@@ -304,7 +313,10 @@ dbl (1): Start
 <section id="patient-data" class="level3">
 <h3 class="anchored" data-anchor-id="patient-data">Patient data</h3>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>patient_num_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data_raw/practice_patients.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 390000 Columns: 10
 ── Column specification ────────────────────────────────────────────────────────
@@ -315,13 +327,19 @@ dbl (2): NUMBER_OF_PATIENTS, year
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>patient_num_df<span class="sc">$</span>month <span class="ot">&lt;-</span> <span class="fu">match</span>(patient_num_df<span class="sc">$</span>month,<span class="fu">tolower</span>(month.name))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
 <section id="prescription-data" class="level3">
 <h3 class="anchored" data-anchor-id="prescription-data">Prescription data</h3>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>all_saba_raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="at">file =</span> <span class="fu">file.path</span>(<span class="fu">here</span>(),<span class="st">"data_raw"</span>,<span class="st">"all_saba.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 499773 Columns: 9
 ── Column specification ────────────────────────────────────────────────────────
@@ -339,6 +357,8 @@ date (1): date
 <section id="preparing-data" class="level2">
 <h2 class="anchored" data-anchor-id="preparing-data">Preparing data</h2>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>CAZ_practices <span class="ot">&lt;-</span> pract_classed <span class="sc">|&gt;</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">location_class =</span> <span class="fu">case_when</span>(buffer_km<span class="sc">==</span><span class="dv">0</span><span class="sc">~</span><span class="st">"within_CAZ"</span>,</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                                    buffer_km<span class="sc">&lt;=</span><span class="dv">1</span><span class="sc">~</span><span class="st">"within_1km"</span>,</span>
@@ -355,6 +375,7 @@ date (1): date
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">month =</span> <span class="fu">month</span>(date),</span>
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">year =</span> <span class="fu">year</span>(date)) <span class="sc">|&gt;</span> </span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_patients,<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span> <span class="ot">=</span> <span class="st">"CODE"</span>,<span class="st">"month"</span>,<span class="st">"year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
 <section id="visualising-trends" class="level2">
@@ -362,6 +383,8 @@ date (1): date
 <section id="saba-numerator" class="level3">
 <h3 class="anchored" data-anchor-id="saba-numerator">SABA numerator</h3>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_ratio <span class="ot">&lt;-</span> CAZ_SABA <span class="sc">|&gt;</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
@@ -423,6 +446,7 @@ date (1): date
 <span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>              ))</span>
 <span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>plots_SABA_ratio<span class="sc">$</span>ratio_plots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]</code></pre>
 </div>
@@ -526,7 +550,10 @@ date (1): date
 <section id="saba-numerator-1" class="level2">
 <h2 class="anchored" data-anchor-id="saba-numerator-1">SABA numerator</h2>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_ratio<span class="sc">$</span>num_plots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]</code></pre>
 </div>
@@ -656,7 +683,10 @@ date (1): date
 <section id="saba-denominator-all-inhalers" class="level3">
 <h3 class="anchored" data-anchor-id="saba-denominator-all-inhalers">SABA denominator (all inhalers)</h3>
 <div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_ratio<span class="sc">$</span>denom_plots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]</code></pre>
 </div>

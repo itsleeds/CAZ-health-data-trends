@@ -36,6 +36,9 @@ format:
       - brand
     css: styles.css
     toc: true
+    toc-depth: 5
+    code-fold: true
+    code-summary: "Show the code"
 
 
 

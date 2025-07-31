@@ -1,5 +1,18 @@
 # GP Practices
 
+## Overview
+
+This section focuses on acquiring and processing data about General Practice (GP) surgeries across England. GP practices serve as the primary point of contact for patients in the NHS system and are therefore crucial for understanding healthcare utilisation patterns in different geographic areas.
+
+For the CAZ health analysis, GP practice data serves several important purposes:
+
+- **Spatial reference points**: Practice locations help link health data to specific geographic areas, allowing us to determine which practices serve populations within or near Clean Air Zones
+- **Denominator data**: Patient registration numbers provide the population base needed to calculate prescription rates and health indicator ratios
+- **Geographic stratification**: Practices can be classified by their proximity to CAZ boundaries to compare health outcomes across different exposure levels
+
+The analysis uses data from OpenPrescribing.net, which provides comprehensive information about NHS prescribing patterns and practice characteristics. This includes practice locations, patient registration numbers, and prescribing volumes, all of which are essential for our spatial health analysis.
+
+By mapping GP practices in relation to CAZ boundaries, we can create meaningful comparison groups for evaluating the health impacts of air quality interventions.
 
 ```{r}
 #| label: packages

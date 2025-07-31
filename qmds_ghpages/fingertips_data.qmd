@@ -3,6 +3,21 @@ title: "fingertips_data"
 format: html
 ---
 
+## Overview
+
+This section accesses and analyses public health data from NHS Digital's Fingertips platform. Fingertips provides a comprehensive collection of health indicators at various geographic levels, making it an invaluable resource for understanding population health patterns.
+
+For this CAZ health analysis, we focus particularly on respiratory health indicators including:
+
+- **Asthma prevalence**: Recorded prevalence of asthma in different age groups
+- **Hospital admissions**: Emergency admissions for respiratory conditions
+- **Air quality measures**: Local pollution levels and monitoring data
+- **Mortality indicators**: Deaths attributable to respiratory diseases
+
+The Fingertips API allows us to access standardized health indicators that can be compared across different geographic areas and time periods. This provides important contextual information for understanding the baseline health status of populations in CAZ areas compared to control areas.
+
+By combining Fingertips data with our prescription analysis, we can build a more complete picture of respiratory health trends and validate our findings against established public health surveillance systems.
+
 ```{r}
 #| label: packages
 #| message: false

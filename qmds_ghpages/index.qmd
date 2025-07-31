@@ -2,4 +2,18 @@
 title: "CAZ-health-data-trends"
 ---
 
-This is a place holder for the main
+## Introduction
+
+This website presents an analysis of health data trends in relation to Clean Air Zones (CAZ) across the UK. Clean Air Zones are areas where targeted action is taken to improve air quality, particularly by discouraging the most polluting vehicles from entering zone boundaries.
+
+This study investigates potential relationships between the implementation of Clean Air Zones and health outcomes, particularly focusing on respiratory conditions such as asthma. The analysis combines prescription data, practice-level patient information, and geographic boundaries to understand spatial patterns and temporal trends.
+
+The site is organised into several key sections:
+
+- **CAZ Definition**: Details about Clean Air Zone boundaries and data sources
+- **Practice Data**: Information about GP practices and their geographic locations  
+- **Prescription Data**: Analysis of prescription patterns, particularly SABA (Short-Acting Beta Agonists) inhalers for asthma
+- **Fingertips Data**: Public health indicators from NHS Digital's Fingertips platform
+- **CAZ Prescription Trends**: Comprehensive analysis of prescription trends in relation to Clean Air Zones
+
+This research aims to provide evidence-based insights into the potential health impacts of air quality interventions in urban areas.

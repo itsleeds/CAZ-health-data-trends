@@ -1,6 +1,12 @@
 
 # Clean Air Zones (CAZ)
 
+## Overview
+
+Clean Air Zones (CAZ) are designated areas within city centers where targeted action is taken to improve air quality by reducing the number of the most polluting vehicles. This section details the geographic boundaries of CAZ areas across the UK and provides access to the spatial data used in this analysis.
+
+
+
 ```{r}
 #| label: packages
 #| message: false

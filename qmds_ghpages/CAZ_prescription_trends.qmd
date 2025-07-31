@@ -2,6 +2,21 @@
 title: "CAZ_prescription_trends"
 ---
 
+## Overview
+
+This section presents a comprehensive analysis of prescription trends in areas affected by Clean Air Zones (CAZ). The analysis focuses primarily on Short-Acting Beta Agonists (SABA) inhalers, which are commonly prescribed for asthma and other respiratory conditions.
+
+By examining prescription patterns before and after CAZ implementation, and comparing areas within CAZ boundaries to surrounding areas, we can assess whether air quality improvements are associated with changes in respiratory medication use. A reduction in SABA prescriptions could indicate improved respiratory health outcomes in the population.
+
+The analysis incorporates:
+
+- **Temporal trends**: Changes in prescription rates over time
+- **Spatial patterns**: Differences between CAZ and non-CAZ areas
+- **Practice-level analysis**: Variations across individual GP practices
+- **Population adjustments**: Accounting for patient registration numbers
+
+This comprehensive approach helps to identify potential causal relationships between air quality interventions and health outcomes while controlling for confounding factors.
+
 ```{r}
 #| label: packages
 #| message: false
@@ -72,7 +87,7 @@ all_data <- get_all_data(2)
 
 ## Preparing data
 
-### Classifing practices between CAZ and non-CAZ (except London)
+### Classifying practices between CAZ and non-CAZ (except London)
 
 ```{r}
 CAZ_practices <- pract_classed |>
@@ -186,7 +201,7 @@ plots_SABA_ratio <- CAZ_SABA |>
                                       se = F,
                                       aes(linetype = location_class))+
                           theme_minimal()+
-                          scale_color_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
+                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
                           scale_y_continuous(limits = c(0,0.7))+
                           scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
                           guides(linetype = "none")
@@ -234,7 +249,7 @@ plots_SABA_numerator <- CAZ_SABA |>
                                       se = F,
                                       aes(linetype = location_class))+
                           theme_minimal()+
-                          scale_color_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
+                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
                           # scale_y_continuous(limits = c(0,1))+
                           scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
                           guides(linetype = "none")
@@ -282,7 +297,7 @@ plots_SABA_denominator <- CAZ_SABA |>
                                       se = F,
                                       aes(linetype = location_class))+
                           theme_minimal()+
-                          scale_color_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
+                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
                           # scale_y_continuous(limits = c(0,1))+
                           scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
                           guides(linetype = "none")
@@ -347,7 +362,7 @@ plots_bnf <- CAZ_bnf |>
                                       se = F,
                                       aes(linetype = location_class))+
                           theme_minimal()+
-                          scale_color_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
+                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
                           # scale_y_continuous(limits = c(0,0.7))+
                           scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
                           guides(linetype = "none")

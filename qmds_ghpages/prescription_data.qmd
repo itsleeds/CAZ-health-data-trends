@@ -3,6 +3,19 @@ title: "prescription_data"
 format: html
 ---
 
+## Overview
+
+This section handles the acquisition and processing of prescription data from NHS England, focusing particularly on medications relevant to respiratory health. The primary focus is on Short-Acting Beta Agonists (SABA), which are commonly prescribed rescue inhalers for asthma and other respiratory conditions.
+
+The prescription data is sourced from OpenPrescribing.net, which provides monthly prescribing data for all NHS practices in England. This allows us to:
+
+- Track prescription trends over time across different geographic areas
+- Compare prescribing patterns between CAZ and non-CAZ areas
+- Adjust for population size using patient registration data
+- Identify potential changes in respiratory health following CAZ implementation
+
+This analysis forms the core of our investigation into the potential health impacts of Clean Air Zones.
+
 ```{r}
 #| label: packages
 #| message: false

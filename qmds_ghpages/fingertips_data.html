@@ -215,7 +215,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" id="toc-compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" class="nav-link active" data-scroll-target="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la">Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" id="toc-compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" class="nav-link" data-scroll-target="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la">Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA</a></li>
   </ul>
 </nav>
     </div>
@@ -241,6 +242,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>This section accesses and analyses public health data from NHS Digital’s Fingertips platform. Fingertips provides a comprehensive collection of health indicators at various geographic levels, making it an invaluable resource for understanding population health patterns.</p>
+<p>For this CAZ health analysis, we focus particularly on respiratory health indicators including:</p>
+<ul>
+<li><strong>Asthma prevalence</strong>: Recorded prevalence of asthma in different age groups</li>
+<li><strong>Hospital admissions</strong>: Emergency admissions for respiratory conditions</li>
+<li><strong>Air quality measures</strong>: Local pollution levels and monitoring data</li>
+<li><strong>Mortality indicators</strong>: Deaths attributable to respiratory diseases</li>
+</ul>
+<p>The Fingertips API allows us to access standardized health indicators that can be compared across different geographic areas and time periods. This provides important contextual information for understanding the baseline health status of populations in CAZ areas compared to control areas.</p>
+<p>By combining Fingertips data with our prescription analysis, we can build a more complete picture of respiratory health trends and validate our findings against established public health surveillance systems.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -549,8 +562,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 73%">
-<col style="width: 26%">
+<col style="width: 79%">
+<col style="width: 20%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -560,64 +573,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Fuel poverty (low income, low energy efficiency methodology)</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Under 75 mortality rate from respiratory disease considered preventable</td>
-<td style="text-align: left;">ICBs, former STPs</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">High-dose inhaled corticosteroid prescribing</td>
-<td style="text-align: left;">Sub-ICB, former CCGs</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">Asthma: QOF prevalence</td>
 <td style="text-align: left;">Government Office Region (E12)</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;">The percentage of zero and one day emergency admissions to hospital for pneumonia</td>
+<td style="text-align: left;">Sub-ICB, former CCGs</td>
+</tr>
 <tr class="odd">
-<td style="text-align: left;">Mortality rate from pneumonia (underlying cause)</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mortality rate from asthma</td>
-<td style="text-align: left;">England</td>
+<td style="text-align: left;">Overweight (including obesity) prevalence in adults, (using adjusted self-reported height and weight)</td>
+<td style="text-align: left;">Government Office Region (E12)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Smoking status at time of delivery</td>
-<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
+<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Smoking status of patients with certain conditions recorded in the last 12 months (denominator incl.&nbsp;PCAs)</td>
-<td style="text-align: left;">ICBs, former STPs</td>
+<td style="text-align: left;">Overweight (including obesity) prevalence in adults, (using adjusted self-reported height and weight)</td>
+<td style="text-align: left;">England</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Emergency hospital admissions for bronchiolitis in children aged under 2 years</td>
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mortality rate from asthma</td>
 <td style="text-align: left;">Sub-ICB, former CCGs</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">Emergency hospital admissions for bronchiolitis in children aged under 2 years</td>
-<td style="text-align: left;">ICBs, former STPs</td>
-</tr>
 <tr class="odd">
-<td style="text-align: left;">Air pollution: fine particulate matter (new method - concentrations of total PM2.5)</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Smoking status of patients with certain conditions recorded in the last 12 months (denominator incl.&nbsp;PCAs)</td>
-<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Patients with Asthma (6-19 yrs): Second-hand smoking status recorded in the last 12 months (denominator incl.&nbsp;PCAs)</td>
-<td style="text-align: left;">General Practice</td>
+<td style="text-align: left;">Mortality rate from chronic obstructive pulmonary disease, all ages</td>
+<td style="text-align: left;">Upper tier local authorities (pre 4/19)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Upper tier local authorities (4/20-3/21)</td>
+<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">Emergency hospital admissions for respiratory disease</td>
+<td style="text-align: left;">ICBs, former STPs</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">Fuel poverty (low income, low energy efficiency methodology)</td>
-<td style="text-align: left;">England</td>
+<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Under 75 mortality rate from respiratory disease considered preventable</td>
+<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Patients with COPD with a MRC dyspnoea score &gt;=3 in the last 12 months, who have had an offer of referral to a pulm. rehab. clinic (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: left;">Sub-ICB, former CCGs</td>
 </tr>
 </tbody>
 </table>
@@ -669,6 +682,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</section>
 <section id="compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" class="level2">
 <h2 class="anchored" data-anchor-id="compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la">Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA</h2>
 <div class="cell">

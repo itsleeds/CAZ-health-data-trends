@@ -215,7 +215,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#downloading-data" id="toc-downloading-data" class="nav-link active" data-scroll-target="#downloading-data">Downloading data</a>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#downloading-data" id="toc-downloading-data" class="nav-link" data-scroll-target="#downloading-data">Downloading data</a>
   <ul>
   <li><a href="#saba" id="toc-saba" class="nav-link" data-scroll-target="#saba">SABA</a></li>
   </ul></li>
@@ -245,6 +246,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>This section handles the acquisition and processing of prescription data from NHS England, focusing particularly on medications relevant to respiratory health. The primary focus is on Short-Acting Beta Agonists (SABA), which are commonly prescribed rescue inhalers for asthma and other respiratory conditions.</p>
+<p>The prescription data is sourced from OpenPrescribing.net, which provides monthly prescribing data for all NHS practices in England. This allows us to:</p>
+<ul>
+<li>Track prescription trends over time across different geographic areas</li>
+<li>Compare prescribing patterns between CAZ and non-CAZ areas</li>
+<li>Adjust for population size using patient registration data</li>
+<li>Identify potential changes in respiratory health following CAZ implementation</li>
+</ul>
+<p>This analysis forms the core of our investigation into the potential health impacts of Clean Air Zones.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -267,6 +279,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE </code></pre>
 </div>
 </div>
+</section>
 <section id="downloading-data" class="level2">
 <h2 class="anchored" data-anchor-id="downloading-data">Downloading data</h2>
 <div class="cell">

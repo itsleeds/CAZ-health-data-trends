@@ -216,6 +216,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a>
+  <ul>
+  <li><a href="#package-installation" id="toc-package-installation" class="nav-link" data-scroll-target="#package-installation">Package Installation</a></li>
+  </ul></li>
   <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading data</a>
   <ul>
   <li><a href="#gp-practices" id="toc-gp-practices" class="nav-link" data-scroll-target="#gp-practices">GP practices</a></li>
@@ -488,6 +492,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Population adjustments</strong>: Accounting for patient registration numbers</li>
 </ul>
 <p>This comprehensive approach helps to identify potential causal relationships between air quality interventions and health outcomes while controlling for confounding factors.</p>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<section id="package-installation" class="level3">
+<h3 class="anchored" data-anchor-id="package-installation">Package Installation</h3>
+<p>Loading required packages for data analysis and visualisation.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -510,10 +520,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+</section>
 <section id="loading-data" class="level2">
 <h2 class="anchored" data-anchor-id="loading-data">Loading data</h2>
 <section id="gp-practices" class="level3">
 <h3 class="anchored" data-anchor-id="gp-practices">GP practices</h3>
+<p>Loading spatial and administrative data for GP practices and CAZ areas.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -575,6 +587,7 @@ dbl (1): Start
 </section>
 <section id="patient-data" class="level3">
 <h3 class="anchored" data-anchor-id="patient-data">Patient data</h3>
+<p>Loading patient registration data for calculating prescription rates.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -598,6 +611,7 @@ dbl (2): NUMBER_OF_PATIENTS, year
 </section>
 <section id="prescription-data" class="level3">
 <h3 class="anchored" data-anchor-id="prescription-data">Prescription data</h3>
+<p>Loading SABA prescription data for respiratory health analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -615,6 +629,7 @@ date (1): date
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
+<p>Loading comprehensive BNF prescription data for broader medication analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -637,6 +652,7 @@ date (1): date
 <h2 class="anchored" data-anchor-id="preparing-data">Preparing data</h2>
 <section id="classifying-practices-between-caz-and-non-caz-except-london" class="level3">
 <h3 class="anchored" data-anchor-id="classifying-practices-between-caz-and-non-caz-except-london">Classifying practices between CAZ and non-CAZ (except London)</h3>
+<p>Creating location-based classifications for GP practices relative to CAZ boundaries.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -664,6 +680,7 @@ date (1): date
 </section>
 <section id="subsetting-saba-data" class="level3">
 <h3 class="anchored" data-anchor-id="subsetting-saba-data">Subsetting SABA data</h3>
+<p>Filtering SABA prescription data for CAZ and control areas with patient population adjustments.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -689,6 +706,7 @@ date (1): date
 </section>
 <section id="subsetting-data-of-main-bnf-codes" class="level3">
 <h3 class="anchored" data-anchor-id="subsetting-data-of-main-bnf-codes">Subsetting data of main BNF codes</h3>
+<p>Filtering broader BNF prescription data for comprehensive medication analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -714,7 +732,7 @@ date (1): date
 <h2 class="anchored" data-anchor-id="extracting-trends">Extracting trends</h2>
 <section id="saba" class="level3">
 <h3 class="anchored" data-anchor-id="saba">SABA</h3>
-<p>Trends from all other practices (except London)</p>
+<p>Aggregating SABA prescription data for control areas (excluding London).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -766,133 +784,62 @@ date (1): date
 <span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"SABA ratio"</span>,</span>
 <span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
 <span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
-<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>              )) </span>
-<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(plots_SABA_ratio<span class="sc">$</span>plots,print)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>              ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> plots_SABA_ratio<span class="sc">$</span>plots){</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-7.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-8.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[2]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-9.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[3]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-10.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[4]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-11.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[5]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-12.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[6]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-13.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[7]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-5-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -903,226 +850,99 @@ date (1): date
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_numerator <span class="ot">&lt;-</span> CAZ_SABA <span class="sc">|&gt;</span> </span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,numerator,denominator),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date)) <span class="sc">|&gt;</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">calc_value =</span> numerator<span class="sc">/</span>denominator) <span class="sc">|&gt;</span> </span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name)) <span class="sc">|&gt;</span> </span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span> <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data,Start,</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>                           \(.x,.y){</span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(noCAZ_SABA_aggre) <span class="sc">|&gt;</span> </span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> numerator<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
-<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
-<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
-<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
-<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,1))+</span></span>
-<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
-<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
-<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>  }),</span>
-<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
-<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
-<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Prescriptions of SABA inhalers per patient"</span>,</span>
-<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
-<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
-<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>              )) </span>
-<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(plots_SABA_numerator<span class="sc">$</span>plots,print)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_numerator <span class="ot">&lt;-</span> CAZ_SABA <span class="sc">|&gt;</span> </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,numerator,denominator),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date)) <span class="sc">|&gt;</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">calc_value =</span> numerator<span class="sc">/</span>denominator) <span class="sc">|&gt;</span> </span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span> <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data,Start,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>                           \(.x,.y){</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(noCAZ_SABA_aggre) <span class="sc">|&gt;</span> </span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> numerator<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,1))+</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  }),</span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Prescriptions of SABA inhalers per patient"</span>,</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>              ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
 </div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> plots_SABA_numerator<span class="sc">$</span>plots){</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-7.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-8.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[2]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-9.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[3]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-10.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[4]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-11.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[5]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-12.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[6]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-13.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[7]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-6-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-8-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1133,226 +953,99 @@ date (1): date
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_denominator <span class="ot">&lt;-</span> CAZ_SABA <span class="sc">|&gt;</span> </span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,numerator,denominator),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date)) <span class="sc">|&gt;</span></span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">calc_value =</span> numerator<span class="sc">/</span>denominator) <span class="sc">|&gt;</span> </span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name)) <span class="sc">|&gt;</span> </span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span> <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data,Start,</span>
-<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>                           \(.x,.y){</span>
-<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
-<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(noCAZ_SABA_aggre) <span class="sc">|&gt;</span> </span>
-<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
-<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
-<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
-<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
-<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
-<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> denominator<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
-<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
-<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
-<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
-<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
-<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
-<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
-<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
-<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,1))+</span></span>
-<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
-<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
-<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a>  }),</span>
-<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
-<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
-<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Prescriptions inhalers per patient"</span>,</span>
-<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
-<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
-<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a>              )) </span>
-<span id="cb51-39"><a href="#cb51-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb51-40"><a href="#cb51-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-41"><a href="#cb51-41" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(plots_SABA_denominator<span class="sc">$</span>plots,print)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>plots_SABA_denominator <span class="ot">&lt;-</span> CAZ_SABA <span class="sc">|&gt;</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"org_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,numerator,denominator),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date)) <span class="sc">|&gt;</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">calc_value =</span> numerator<span class="sc">/</span>denominator) <span class="sc">|&gt;</span> </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name)) <span class="sc">|&gt;</span> </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span> <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data,Start,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>                           \(.x,.y){</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(noCAZ_SABA_aggre) <span class="sc">|&gt;</span> </span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> denominator<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,1))+</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>  }),</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Prescriptions inhalers per patient"</span>,</span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>              ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
 </div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> plots_SABA_denominator<span class="sc">$</span>plots){</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-7.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-8.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[2]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-9.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[3]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-10.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[4]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-11.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[5]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-12.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[6]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-13.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-[[7]]</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 25 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-7-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1361,18 +1054,19 @@ date (1): date
 </section>
 <section id="main-bnf-codes" class="level3">
 <h3 class="anchored" data-anchor-id="main-bnf-codes">Main BNF codes</h3>
-<p>Trends from all other practices (except London)</p>
+<p>This analysis is undertaken for all the main BNF codes, see <a href="https://openprescribing.net/bnf/">this</a></p>
+<p>Calculating trends from all other practices (except London) as a control</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_aggre <span class="ot">&lt;-</span> noCAZ_bnf <span class="sc">|&gt;</span> </span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,items,quantity),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,month,year,date,bnf)) </span>
-<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_aggre<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(noCAZ_bnf_aggre<span class="sc">$</span>date)</span>
-<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>CAZ_bnf<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(CAZ_bnf<span class="sc">$</span>date)</span>
-<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_nest <span class="ot">&lt;-</span> noCAZ_bnf_aggre <span class="sc">|&gt;</span> </span>
-<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> bnf,<span class="at">.key =</span> <span class="st">"control_data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_aggre <span class="ot">&lt;-</span> noCAZ_bnf <span class="sc">|&gt;</span> </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,items,quantity),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,month,year,date,bnf)) </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_aggre<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(noCAZ_bnf_aggre<span class="sc">$</span>date)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>CAZ_bnf<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(CAZ_bnf<span class="sc">$</span>date)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>noCAZ_bnf_nest <span class="ot">&lt;-</span> noCAZ_bnf_aggre <span class="sc">|&gt;</span> </span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> bnf,<span class="at">.key =</span> <span class="st">"control_data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1381,831 +1075,516 @@ date (1): date
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>plots_bnf <span class="ot">&lt;-</span> CAZ_bnf <span class="sc">|&gt;</span> </span>
-<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"row_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,items,quantity),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
-<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date,bnf)) <span class="sc">|&gt;</span></span>
-<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name,bnf)) <span class="sc">|&gt;</span> </span>
-<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span></span>
-<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(noCAZ_bnf_nest,<span class="at">by =</span> <span class="st">"bnf"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data, Start,\(.x,.y){</span>
-<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
-<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
-<span id="cb74-14"><a href="#cb74-14" aria-hidden="true" tabindex="-1"></a>                           }),</span>
-<span id="cb74-15"><a href="#cb74-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">trend_data =</span> <span class="fu">map2</span>(trend_data,control_data,\(.x,.y){</span>
-<span id="cb74-16"><a href="#cb74-16" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
-<span id="cb74-17"><a href="#cb74-17" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(.y <span class="sc">|&gt;</span> </span>
-<span id="cb74-18"><a href="#cb74-18" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span><span class="fu">min</span>(.x<span class="sc">$</span>year))) </span>
-<span id="cb74-19"><a href="#cb74-19" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
-<span id="cb74-20"><a href="#cb74-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
-<span id="cb74-21"><a href="#cb74-21" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
-<span id="cb74-22"><a href="#cb74-22" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
-<span id="cb74-23"><a href="#cb74-23" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> items<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
-<span id="cb74-24"><a href="#cb74-24" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
-<span id="cb74-25"><a href="#cb74-25" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
-<span id="cb74-26"><a href="#cb74-26" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
-<span id="cb74-27"><a href="#cb74-27" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb74-28"><a href="#cb74-28" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
-<span id="cb74-29"><a href="#cb74-29" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
-<span id="cb74-30"><a href="#cb74-30" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
-<span id="cb74-31"><a href="#cb74-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
-<span id="cb74-32"><a href="#cb74-32" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
-<span id="cb74-33"><a href="#cb74-33" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,0.7))+</span></span>
-<span id="cb74-34"><a href="#cb74-34" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
-<span id="cb74-35"><a href="#cb74-35" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
-<span id="cb74-36"><a href="#cb74-36" aria-hidden="true" tabindex="-1"></a>  }),</span>
-<span id="cb74-37"><a href="#cb74-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
-<span id="cb74-38"><a href="#cb74-38" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
-<span id="cb74-39"><a href="#cb74-39" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Items per patient"</span>,</span>
-<span id="cb74-40"><a href="#cb74-40" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
-<span id="cb74-41"><a href="#cb74-41" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
-<span id="cb74-42"><a href="#cb74-42" aria-hidden="true" tabindex="-1"></a>              ),</span>
-<span id="cb74-43"><a href="#cb74-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,bnf,\(.x,.y){</span>
-<span id="cb74-44"><a href="#cb74-44" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">"BNF code:"</span>,.y))}</span>
-<span id="cb74-45"><a href="#cb74-45" aria-hidden="true" tabindex="-1"></a>              ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>plots_bnf <span class="ot">&lt;-</span> CAZ_bnf <span class="sc">|&gt;</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_practices <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(code,location_class,CAZ_name),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"row_id"</span><span class="ot">=</span><span class="st">"code"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(NUMBER_OF_PATIENTS,items,quantity),\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(location_class,CAZ_name,month,year,date,bnf)) <span class="sc">|&gt;</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> <span class="fu">c</span>(CAZ_name,bnf)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(CAZ_lst <span class="sc">|&gt;</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(CAZ,Start),<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"CAZ_name"</span><span class="ot">=</span> <span class="st">"CAZ"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(noCAZ_bnf_nest,<span class="at">by =</span> <span class="st">"bnf"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">trend_data =</span> <span class="fu">map2</span>(data, Start,\(.x,.y){</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span>.y)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>                           }),</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">trend_data =</span> <span class="fu">map2</span>(trend_data,control_data,\(.x,.y){</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>                             .x <span class="sc">|&gt;</span> </span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">bind_rows</span>(.y <span class="sc">|&gt;</span> </span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">filter</span>(year<span class="sc">&gt;=</span><span class="fu">min</span>(.x<span class="sc">$</span>year))) </span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>                           })) <span class="sc">|&gt;</span> </span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data,trend_data,</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>                      \(.x, .y){</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>                        .x <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date,</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">y =</span> items<span class="sc">/</span>NUMBER_OF_PATIENTS,</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">colour =</span> location_class))<span class="sc">+</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> location_class),<span class="at">alpha =</span> <span class="fl">0.2</span>,<span class="at">linewidth =</span> <span class="fl">0.2</span>)<span class="sc">+</span></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">geom_smooth</span>(<span class="at">data =</span> .y,</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">formula =</span> <span class="st">'y ~ x'</span>,</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">se =</span> F,</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">aes</span>(<span class="at">linetype =</span> location_class))<span class="sc">+</span></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(cols4all<span class="sc">::</span><span class="fu">c4a</span>(<span class="at">palette =</span> <span class="st">"set1"</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>],<span class="st">"gray30"</span>))<span class="sc">+</span></span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>                          <span class="co"># scale_y_continuous(limits = c(0,0.7))+</span></span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"solid"</span>,<span class="dv">4</span>),<span class="st">"dashed"</span>))<span class="sc">+</span></span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">guides</span>(<span class="at">linetype =</span> <span class="st">"none"</span>)</span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>  }),</span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,CAZ_name,\(.x,.y){</span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> .y,</span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a>              <span class="at">y =</span> <span class="st">"Items per patient"</span>,</span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"Location Class"</span>,</span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a>              <span class="at">x =</span> <span class="st">""</span>)}</span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a>              ),</span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">plots =</span> <span class="fu">map2</span>(plots,bnf,\(.x,.y){</span>
+<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>    .x <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">"BNF code:"</span>,.y))}</span>
+<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a>              ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="bnf-code-01" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-01">BNF code: 01</h4>
 <section id="caz-newcastle-upon-tyne" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-2.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-2.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-3.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-3.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-4.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-4.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-5.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-5.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-6.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-6.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-7.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-7.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-02" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-02">BNF code: 02</h4>
 <section id="caz-newcastle-upon-tyne-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-1">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-8.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-8.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-1">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-9.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-9.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-1">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-10.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-10.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-1">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-11.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-11.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-1">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-12.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-12.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-1">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-13.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-13.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-1" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-1">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-14.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-14.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-03" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-03">BNF code: 03</h4>
 <section id="caz-newcastle-upon-tyne-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-2">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-15.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-15.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-2">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-16.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-16.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-2">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-17.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-17.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-2">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-18.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-18.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-2">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-19.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-19.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-2">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-20.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-20.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-2" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-2">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-21.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-21.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-04" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-04">BNF code: 04</h4>
 <section id="caz-newcastle-upon-tyne-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-3">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-22.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-22.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-3">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-23.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-23.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-3">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-24.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-24.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-3">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-25.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-25.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-3">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-26.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-26.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-3">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-27.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-27.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-3" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-3">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-28.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-28.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-05" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-05">BNF code: 05</h4>
 <section id="caz-newcastle-upon-tyne-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-4">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-29.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-29.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-4">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-30.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-30.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-4">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-31.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-31.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-4">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-32.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-32.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-4">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-33.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-33.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-4">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-34.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-34.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-4" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-4">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-35.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-35.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-06" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-06">BNF code: 06</h4>
 <section id="caz-newcastle-upon-tyne-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-5">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-36.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-36.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-5">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-37.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-37.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-5">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-38.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-38.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-5">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-39.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-39.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-5">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-40.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-40.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-5">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-41.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-41.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-5" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-5">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-42.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-42.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-07" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-07">BNF code: 07</h4>
 <section id="caz-newcastle-upon-tyne-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-6">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-43.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-43.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-6">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-44.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-44.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-6">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-45.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-45.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-6">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-46.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-46.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-6">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-47.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-47.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-6">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-48.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-48.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-6" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-6">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-49.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-49.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-08" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-08">BNF code: 08</h4>
 <section id="caz-newcastle-upon-tyne-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-7">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-50.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-50.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-7">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-51.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-51.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-7">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-52.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-52.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-7">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-53.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-53.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-7">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-54.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-54.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-7">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-55.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-55.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-7" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-7">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-56.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-56.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-09" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-09">BNF code: 09</h4>
 <section id="caz-newcastle-upon-tyne-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-8">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-57.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-57.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-8">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-58.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-58.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-8">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-59.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-59.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-8">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-60.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-60.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-8">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-61.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-61.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-8">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-62.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-62.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-8" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-8">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-63.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-63.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-10" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-10">BNF code: 10</h4>
 <section id="caz-newcastle-upon-tyne-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-9">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-64.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-64.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-9">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-65.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-65.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-9">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-66.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-66.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-9">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-67.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-67.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-9">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-68.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-68.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-9">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-69.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-69.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-9" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-9">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-70.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-70.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-11" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-11">BNF code: 11</h4>
 <section id="caz-newcastle-upon-tyne-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-10">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-71.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-71.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-10">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-72.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-72.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-10">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-73.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-73.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-10">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-74.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-74.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-10">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-75.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-75.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-10">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-76.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-76.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-10" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-10">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-77.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-77.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-12" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-12">BNF code: 12</h4>
 <section id="caz-newcastle-upon-tyne-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-11">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-78.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-78.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-11">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-79.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-79.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-11">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-80.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-80.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-11">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-81.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-81.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-11">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-82.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-82.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-11">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-83.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-83.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-11" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-11">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-84.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-84.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-13" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-13">BNF code: 13</h4>
 <section id="caz-newcastle-upon-tyne-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-12">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-85.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-85.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-12">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-86.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-86.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-12">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-87.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-87.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-12">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-88.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-88.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-12">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-89.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-89.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-12">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-90.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-90.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-12" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-12">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-91.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-91.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-14" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-14">BNF code: 14</h4>
 <section id="caz-newcastle-upon-tyne-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-13">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-92.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-92.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-13">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-93.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-93.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-13">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-94.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-94.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-13">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-95.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-95.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-13">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-96.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-96.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-13">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-97.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-97.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-13" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-13">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-98.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-98.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-15" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-15">BNF code: 15</h4>
 <section id="caz-newcastle-upon-tyne-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-14">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-99.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-99.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-14">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-100.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-100.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-14">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-101.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-101.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-14">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-102.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-102.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-14">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-103.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-103.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-14">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-104.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-104.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-14" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-14">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-105.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-105.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-18" class="level4">
@@ -2216,10 +1595,7 @@ date (1): date
 </section>
 <section id="caz-bradford-15" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-15">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 6 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-106.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-106.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-15" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-15">CAZ: Sheffield</h5>
@@ -2227,10 +1603,7 @@ date (1): date
 </section>
 <section id="caz-portsmouth-15" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-15">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 4 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-107.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-107.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-15" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-15">CAZ: BANES</h5>
@@ -2242,270 +1615,162 @@ date (1): date
 </section>
 <section id="caz-birmingham-15" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-15">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 3 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-108.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-108.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-19" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-19">BNF code: 19</h4>
 <section id="caz-newcastle-upon-tyne-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-16">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-109.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-109.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-16">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-110.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-110.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-16">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-111.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-111.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-16">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-112.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-112.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-16">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 16 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-113.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-113.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-16">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-114.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-114.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-16" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-16">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-115.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-115.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-20" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-20">BNF code: 20</h4>
 <section id="caz-newcastle-upon-tyne-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-17">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-116.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-116.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-17">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-117.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-117.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-17">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-118.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-118.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-17">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-119.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-119.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-17">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-120.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-120.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-17">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-121.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-121.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-17" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-17">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-122.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-122.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-21" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-21">BNF code: 21</h4>
 <section id="caz-newcastle-upon-tyne-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-18">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-123.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-123.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-18">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-124.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-124.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-18">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-125.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-125.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-18">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-126.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-126.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-18">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-127.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-127.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-18">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-128.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-128.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-18" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-18">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-129.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-129.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-22" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-22">BNF code: 22</h4>
 <section id="caz-newcastle-upon-tyne-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-19">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-130.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-130.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-19">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-131.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-131.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-19">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-132.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-132.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-19">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-133.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-133.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-19">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-134.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-134.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-19">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-135.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-135.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-19" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-19">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-136.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-136.png" class="img-fluid" width="672"></p>
 </section>
 </section>
 <section id="bnf-code-23" class="level4">
 <h4 class="anchored" data-anchor-id="bnf-code-23">BNF code: 23</h4>
 <section id="caz-newcastle-upon-tyne-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-newcastle-upon-tyne-20">CAZ: Newcastle upon Tyne</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-137.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-137.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bradford-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bradford-20">CAZ: Bradford</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-138.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-138.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-sheffield-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-sheffield-20">CAZ: Sheffield</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-139.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-139.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-portsmouth-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-portsmouth-20">CAZ: Portsmouth</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-140.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-140.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-banes-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-banes-20">CAZ: BANES</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-141.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-141.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-bristol-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-bristol-20">CAZ: Bristol</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-142.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-142.png" class="img-fluid" width="672"></p>
 </section>
 <section id="caz-birmingham-20" class="level5">
 <h5 class="anchored" data-anchor-id="caz-birmingham-20">CAZ: Birmingham</h5>
-<p>[[1]]</p>
-<pre><code>Warning: Removed 15 rows containing non-finite outside the scale range
-(`stat_smooth()`).</code></pre>
-<p><img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-10-143.png" class="img-fluid" width="672"></p>
+<p>[[1]] <img src="CAZ_prescription_trends_files/figure-html/unnamed-chunk-13-143.png" class="img-fluid" width="672"></p>
 
 
 </section>

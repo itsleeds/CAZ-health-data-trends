@@ -216,7 +216,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" id="toc-compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" class="nav-link" data-scroll-target="#compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la">Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA</a></li>
+  <li><a href="#data-acquisition" id="toc-data-acquisition" class="nav-link" data-scroll-target="#data-acquisition">Data Acquisition</a>
+  <ul>
+  <li><a href="#profile-discovery" id="toc-profile-discovery" class="nav-link" data-scroll-target="#profile-discovery">Profile Discovery</a></li>
+  <li><a href="#asthma-indicators" id="toc-asthma-indicators" class="nav-link" data-scroll-target="#asthma-indicators">Asthma Indicators</a></li>
+  <li><a href="#respiratory-disease-indicators" id="toc-respiratory-disease-indicators" class="nav-link" data-scroll-target="#respiratory-disease-indicators">Respiratory Disease Indicators</a></li>
+  <li><a href="#indicator-selection" id="toc-indicator-selection" class="nav-link" data-scroll-target="#indicator-selection">Indicator Selection</a></li>
+  <li><a href="#area-type-mapping" id="toc-area-type-mapping" class="nav-link" data-scroll-target="#area-type-mapping">Area Type Mapping</a></li>
+  <li><a href="#geographic-classifications" id="toc-geographic-classifications" class="nav-link" data-scroll-target="#geographic-classifications">Geographic Classifications</a></li>
+  <li><a href="#data-integration" id="toc-data-integration" class="nav-link" data-scroll-target="#data-integration">Data Integration</a></li>
+  <li><a href="#sample-data-extraction" id="toc-sample-data-extraction" class="nav-link" data-scroll-target="#sample-data-extraction">Sample Data Extraction</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">Data Preparation</a></li>
+  </ul></li>
+  <li><a href="#comprehensive-indicator-analysis" id="toc-comprehensive-indicator-analysis" class="nav-link" data-scroll-target="#comprehensive-indicator-analysis">Comprehensive Indicator Analysis</a>
+  <ul>
+  <li><a href="#combined-dataset-creation" id="toc-combined-dataset-creation" class="nav-link" data-scroll-target="#combined-dataset-creation">Combined Dataset Creation</a></li>
+  <li><a href="#local-authority-data-filtering" id="toc-local-authority-data-filtering" class="nav-link" data-scroll-target="#local-authority-data-filtering">Local Authority Data Filtering</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -284,7 +300,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fingertipsR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Downloading profile list</p>
+</section>
+<section id="data-acquisition" class="level2">
+<h2 class="anchored" data-anchor-id="data-acquisition">Data Acquisition</h2>
+<section id="profile-discovery" class="level3">
+<h3 class="anchored" data-anchor-id="profile-discovery">Profile Discovery</h3>
+<p>Retrieving the complete list of available health data profiles from the Fingertips platform.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -303,7 +324,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 6        18 Smoking Profile 1938132889 Impact of smoking                        </code></pre>
 </div>
 </div>
-<p>Indicator list for Asthma domain (code <code>8000009</code>)</p>
+</section>
+<section id="asthma-indicators" class="level3">
+<h3 class="anchored" data-anchor-id="asthma-indicators">Asthma Indicators</h3>
+<p>Extracting health indicators specifically for asthma conditions using domain code 8000009.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -402,7 +426,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
-<p>Indicator list for Respiratory disease (code <code>29</code>)</p>
+</section>
+<section id="respiratory-disease-indicators" class="level3">
+<h3 class="anchored" data-anchor-id="respiratory-disease-indicators">Respiratory Disease Indicators</h3>
+<p>Obtaining indicators for broader respiratory diseases using profile code 29.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -517,7 +544,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
-<p>Selecting the codes for Respiratory profile</p>
+</section>
+<section id="indicator-selection" class="level3">
+<h3 class="anchored" data-anchor-id="indicator-selection">Indicator Selection</h3>
+<p>Creating a focused list of respiratory indicator IDs for subsequent analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -525,19 +555,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(IndicatorID) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Indicators are reported for different area types. The next code extracts the area types for each indicator.</p>
+</section>
+<section id="area-type-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="area-type-mapping">Area Type Mapping</h3>
+<p>Determining which geographic area types are available for each respiratory health indicator.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind <span class="ot">&lt;-</span> <span class="fu">do.call</span>(bind_rows,<span class="fu">lapply</span>(sel_indicator,\(x) <span class="fu">indicator_areatypes</span>(<span class="at">IndicatorID =</span> x)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+</section>
+<section id="geographic-classifications" class="level3">
+<h3 class="anchored" data-anchor-id="geographic-classifications">Geographic Classifications</h3>
+<p>Retrieving all available area type classifications for spatial analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>area_ty_lst <span class="ot">&lt;-</span> <span class="fu">area_types</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+</section>
+<section id="data-integration" class="level3">
+<h3 class="anchored" data-anchor-id="data-integration">Data Integration</h3>
+<p>Joining indicator and area type information with descriptive names for clarity.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -562,8 +603,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 79%">
-<col style="width: 20%">
+<col style="width: 70%">
+<col style="width: 29%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -573,70 +614,73 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Asthma: QOF prevalence</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
+<td style="text-align: left;">Air pollution: fine particulate matter (new method - concentrations of total PM2.5)</td>
+<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">The percentage of zero and one day emergency admissions to hospital for pneumonia</td>
+<td style="text-align: left;">Mortality rate from COPD as a contributory cause</td>
 <td style="text-align: left;">Sub-ICB, former CCGs</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Overweight (including obesity) prevalence in adults, (using adjusted self-reported height and weight)</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Smoking status at time of delivery</td>
-<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Overweight (including obesity) prevalence in adults, (using adjusted self-reported height and weight)</td>
-<td style="text-align: left;">England</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Mortality rate from asthma</td>
-<td style="text-align: left;">Sub-ICB, former CCGs</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Mortality rate from chronic obstructive pulmonary disease, all ages</td>
-<td style="text-align: left;">Upper tier local authorities (pre 4/19)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Emergency hospital admissions for respiratory disease</td>
+<td style="text-align: left;">Mortality rate from respiratory disease, all ages</td>
 <td style="text-align: left;">ICBs, former STPs</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Fuel poverty (low income, low energy efficiency methodology)</td>
-<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
+<td style="text-align: left;">Mortality rate from respiratory disease, all ages</td>
+<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
+<td style="text-align: left;">Smoking status at time of delivery</td>
+<td style="text-align: left;">Lower tier local authorities (4/20-3/21)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Under 75 mortality rate from respiratory disease considered preventable</td>
-<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
+<td style="text-align: left;">Median length of stay (days) of emergency admissions to hospital for asthma (aged under 19 years)</td>
+<td style="text-align: left;">England</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Patients with COPD with a MRC dyspnoea score &gt;=3 in the last 12 months, who have had an offer of referral to a pulm. rehab. clinic (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: left;">Smoking Prevalence in adults (aged 18 and over) - current smokers (APS)</td>
+<td style="text-align: left;">Government Office Region (E12)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Percentage of COPD deaths that occur in care homes</td>
+<td style="text-align: left;">England</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Under 75 mortality rate from respiratory disease considered preventable</td>
+<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fuel poverty (low income, low energy efficiency methodology)</td>
+<td style="text-align: left;">Upper tier local authorities (4/20-3/21)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mortality rate from COPD as a contributory cause</td>
+<td style="text-align: left;">Government Office Region (E12)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Air pollution: fine particulate matter (new method - concentrations of total PM2.5)</td>
+<td style="text-align: left;">Upper tier local authorities (4/21-3/23)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Air pollution: fine particulate matter (new method - concentrations of total PM2.5)</td>
+<td style="text-align: left;">Government Office Region (E12)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Under 75 mortality rate from respiratory disease</td>
+<td style="text-align: left;">Lower tier local authorities (4/20-3/21)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Median length of stay (days) of emergency admissions to hospital for asthma (aged under 19 years)</td>
 <td style="text-align: left;">Sub-ICB, former CCGs</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>Data for one indicator of the Respiratory profile</p>
+</section>
+<section id="sample-data-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="sample-data-extraction">Sample Data Extraction</h3>
+<p>Downloading actual health data for the first available respiratory indicator.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -646,23 +690,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+</section>
+<section id="data-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation">Data Preparation</h3>
+<p>Preparing sample data for visualisation by selecting the most common area type and random sample areas.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Code from vignette </span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"IndicatorID"</span>, <span class="st">"AreaCode"</span>, <span class="st">"ParentName"</span>, <span class="st">"Sex"</span>, <span class="st">"Timeperiod"</span>, <span class="st">"Value"</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> <span class="fu">table</span>(temp_data<span class="sc">$</span>AreaType) <span class="co"># tally each group in the AreaType field</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> area_type_name[area_type_name <span class="sc">==</span> <span class="fu">max</span>(area_type_name)] <span class="co"># pick the group with the highest frequency</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> <span class="fu">names</span>(area_type_name) <span class="co"># retrieve the name</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>samp_areas <span class="ot">&lt;-</span> <span class="fu">sample</span>(temp_data<span class="sc">$</span>AreaCode <span class="sc">|&gt;</span> <span class="fu">unique</span>(),<span class="dv">5</span>)</span>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"IndicatorID"</span>, <span class="st">"AreaCode"</span>, <span class="st">"ParentName"</span>, <span class="st">"Sex"</span>, <span class="st">"Timeperiod"</span>, <span class="st">"Value"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> <span class="fu">table</span>(temp_data<span class="sc">$</span>AreaType) <span class="co"># tally each group in the AreaType field</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> area_type_name[area_type_name <span class="sc">==</span> <span class="fu">max</span>(area_type_name)] <span class="co"># pick the group with the highest frequency</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>area_type_name <span class="ot">&lt;-</span> <span class="fu">names</span>(area_type_name) <span class="co"># retrieve the name</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>samp_areas <span class="ot">&lt;-</span> <span class="fu">sample</span>(temp_data<span class="sc">$</span>AreaCode <span class="sc">|&gt;</span> <span class="fu">unique</span>(),<span class="dv">5</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> temp_data[temp_data<span class="sc">$</span>AreaType <span class="sc">==</span> area_type_name <span class="sc">&amp;</span> temp_data<span class="sc">$</span>AreaCode <span class="sc">%in%</span> samp_areas,</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                  cols]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> temp_data[temp_data<span class="sc">$</span>AreaType <span class="sc">==</span> area_type_name <span class="sc">&amp;</span> temp_data<span class="sc">$</span>AreaCode <span class="sc">%in%</span> samp_areas,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>                  cols]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>We are going to show the historic data for five areas of type Counties &amp; UAs (from Apr 2023)</p>
@@ -683,8 +730,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
-<section id="compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la" class="level2">
-<h2 class="anchored" data-anchor-id="compiling-a-list-of-indicators-from-the-respiratory-and-asthma-domain-that-are-available-for-lower-and-upper-tier-la">Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA</h2>
+</section>
+<section id="comprehensive-indicator-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="comprehensive-indicator-analysis">Comprehensive Indicator Analysis</h2>
+<section id="combined-dataset-creation" class="level3">
+<h3 class="anchored" data-anchor-id="combined-dataset-creation">Combined Dataset Creation</h3>
+<p>Merging respiratory and asthma indicators to create a comprehensive dataset for analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -693,7 +744,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>sel_indicator_all <span class="ot">&lt;-</span> indicator_lst_all <span class="sc">|&gt;</span> <span class="fu">pull</span>(IndicatorID) <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>The following code will extract the indicators that are available for lower/upper LA</p>
+</section>
+<section id="local-authority-data-filtering" class="level3">
+<h3 class="anchored" data-anchor-id="local-authority-data-filtering">Local Authority Data Filtering</h3>
+<p>Extracting indicators available at local authority and practice levels for geographic analysis.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -717,6 +771,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

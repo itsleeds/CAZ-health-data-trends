@@ -216,11 +216,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a>
+  <ul>
+  <li><a href="#package-installation" id="toc-package-installation" class="nav-link" data-scroll-target="#package-installation">Package Installation</a></li>
+  </ul></li>
   <li><a href="#downloading-data" id="toc-downloading-data" class="nav-link" data-scroll-target="#downloading-data">Downloading data</a>
   <ul>
   <li><a href="#saba" id="toc-saba" class="nav-link" data-scroll-target="#saba">SABA</a></li>
   </ul></li>
-  <li><a href="#all-bfn-groups" id="toc-all-bfn-groups" class="nav-link" data-scroll-target="#all-bfn-groups">All BFN groups</a></li>
+  <li><a href="#all-bnf-groups" id="toc-all-bnf-groups" class="nav-link" data-scroll-target="#all-bnf-groups">All BNF groups</a>
+  <ul>
+  <li><a href="#bnf-code-discovery" id="toc-bnf-code-discovery" class="nav-link" data-scroll-target="#bnf-code-discovery">BNF Code Discovery</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -257,6 +264,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Identify potential changes in respiratory health following CAZ implementation</li>
 </ul>
 <p>This analysis forms the core of our investigation into the potential health impacts of Clean Air Zones.</p>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<section id="package-installation" class="level3">
+<h3 class="anchored" data-anchor-id="package-installation">Package Installation</h3>
+<p>Loading required packages for spatial analysis and web scraping.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -280,8 +293,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+</section>
 <section id="downloading-data" class="level2">
 <h2 class="anchored" data-anchor-id="downloading-data">Downloading data</h2>
+<p>Loading Sub-ICB boundary data for geographic reference.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -300,6 +315,7 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 </div>
 <section id="saba" class="level3">
 <h3 class="anchored" data-anchor-id="saba">SABA</h3>
+<p>Downloading SABA prescription data from OpenPrescribing for all Sub-ICB areas.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -332,9 +348,11 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 </div>
 </section>
 </section>
-<section id="all-bfn-groups" class="level2">
-<h2 class="anchored" data-anchor-id="all-bfn-groups">All BFN groups</h2>
-<p>Downloading the data for all BFN groups (API limits might apply)</p>
+<section id="all-bnf-groups" class="level2">
+<h2 class="anchored" data-anchor-id="all-bnf-groups">All BNF groups</h2>
+<section id="bnf-code-discovery" class="level3">
+<h3 class="anchored" data-anchor-id="bnf-code-discovery">BNF Code Discovery</h3>
+<p>Extracting all available BNF codes from the OpenPrescribing website for comprehensive data download.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -374,6 +392,7 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

@@ -17,6 +17,12 @@ The analysis incorporates:
 
 This comprehensive approach helps to identify potential causal relationships between air quality interventions and health outcomes while controlling for confounding factors.
 
+## Setup
+
+### Package Installation
+
+Loading required packages for data analysis and visualisation.
+
 ```{r}
 #| label: packages
 #| message: false
@@ -39,6 +45,9 @@ sapply(pkgs, require, character.only = TRUE)
 ## Loading data
 
 ### GP practices
+
+Loading spatial and administrative data for GP practices and CAZ areas.
+
 ```{r}
 #| label: read-data-pract
 subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
@@ -48,6 +57,8 @@ CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
 ```
 
 ### Patient data
+
+Loading patient registration data for calculating prescription rates.
 
 ```{r}
 #| label: read-data-patients
@@ -59,12 +70,15 @@ patient_num_df$month <- match(patient_num_df$month,tolower(month.name))
 
 ### Prescription data
 
+Loading SABA prescription data for respiratory health analysis.
+
 ```{r}
 #| label: read-data-prescr-saba
 
 all_saba_raw <- read_csv(file = file.path(here(),"data_raw","all_saba.csv"))
 ```
 
+Loading comprehensive BNF prescription data for broader medication analysis.
 
 ```{r}
 #| label: read-data-prescr-main
@@ -88,6 +102,8 @@ all_data <- get_all_data(2)
 ## Preparing data
 
 ### Classifying practices between CAZ and non-CAZ (except London)
+
+Creating location-based classifications for GP practices relative to CAZ boundaries.
 
 ```{r}
 CAZ_practices <- pract_classed |>
@@ -115,6 +131,8 @@ all_other_codes <- all_practices |>
 
 ### Subsetting SABA data 
 
+Filtering SABA prescription data for CAZ and control areas with patient population adjustments.
+
 ```{r}
 
 CAZ_SABA <- all_saba_raw |> 
@@ -139,6 +157,8 @@ noCAZ_SABA <- all_saba_raw |>
 
 ### Subsetting data of main BNF codes
 
+Filtering broader BNF prescription data for comprehensive medication analysis.
+
 ```{r}
 CAZ_bnf <- all_data[row_id %in% CAZ_practices$code,][,`:=`(month = month(date),
          year = year(date))]  |> 
@@ -162,7 +182,7 @@ noCAZ_bnf <- all_data[!row_id %in% CAZ_practices$code&row_id %in% all_other_code
 
 ### SABA
 
-Trends from all other practices (except London)
+Aggregating SABA prescription data for control areas (excluding London).
 
 ```{r}
 noCAZ_SABA_aggre <- noCAZ_SABA |> 
@@ -211,17 +231,23 @@ plots_SABA_ratio <- CAZ_SABA |>
               y = "SABA ratio",
               col = "Location Class",
               x = "")}
-              )) 
-  
+              ))
+```
 
-lapply(plots_SABA_ratio$plots,print)
 
+```{r}
+#| message: false
+#| error: false
+#| warning: false
+
+for (i in plots_SABA_ratio$plots){
+  print(i)
+}
 ```
 
 #### SABA numerator
 
 ```{r}
-
 plots_SABA_numerator <- CAZ_SABA |> 
   left_join(CAZ_practices |> st_drop_geometry() |> 
               select(code,location_class,CAZ_name),by = c("org_id"="code")) |> 
@@ -259,12 +285,18 @@ plots_SABA_numerator <- CAZ_SABA |>
               y = "Prescriptions of SABA inhalers per patient",
               col = "Location Class",
               x = "")}
-              )) 
-  
-
-lapply(plots_SABA_numerator$plots,print)
+              ))
+```
 
 
+```{r}
+#| message: false
+#| error: false
+#| warning: false
+
+for (i in plots_SABA_numerator$plots){
+  print(i)
+}
 ```
 
 #### SABA denominator (all inhalers)
@@ -307,14 +339,26 @@ plots_SABA_denominator <- CAZ_SABA |>
               y = "Prescriptions inhalers per patient",
               col = "Location Class",
               x = "")}
-              )) 
-  
+              ))
+```
 
-lapply(plots_SABA_denominator$plots,print)
+
+```{r}
+#| message: false
+#| error: false
+#| warning: false
+
+for (i in plots_SABA_denominator$plots){
+  print(i)
+}
 ```
 
 ### Main BNF codes
-Trends from all other practices (except London)
+
+This analysis is undertaken for all the main BNF codes, see [this](https://openprescribing.net/bnf/)
+
+
+Calculating trends from all other practices (except London) as a control
 
 ```{r}
 noCAZ_bnf_aggre <- noCAZ_bnf |> 
@@ -381,6 +425,8 @@ plots_bnf <- CAZ_bnf |>
 ```{r}
 #| echo: false
 #| results: asis
+#| message: false
+#| warning: false
   
 bnf_codes <- plots_bnf$bnf |> unique()
 

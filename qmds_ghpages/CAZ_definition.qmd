@@ -7,6 +7,12 @@ Clean Air Zones (CAZ) are designated areas within city centers where targeted ac
 
 
 
+## Setup
+
+### Package Installation
+
+Loading required R packages for spatial analysis and data manipulation.
+
 ```{r}
 #| label: packages
 #| message: false
@@ -31,6 +37,8 @@ sapply(pkgs, require, character.only = TRUE)
 The boundaries have been obtained manually from the different official repositories and compiled in a
 single `gpkg` file. The url to the sources is available in the metadata file.
 
+Downloading CAZ boundary spatial data if not already present locally.
+
 ```{r}
 #| label: download-boundaries
 
@@ -44,6 +52,8 @@ if (!file.exists("data_raw/CAZ_boundaries.gpkg")){
 
 ### Meta-data
 
+Downloading CAZ metadata including implementation dates and zone details.
+
 ```{r}
 #| label: download-metadata-caz
 
@@ -56,13 +66,18 @@ if (!file.exists("data_raw/CAZ_list.csv")){
 
 ## Loading Data
 
+Loading CAZ spatial boundaries and metadata into R for analysis.
+
 ```{r}
 #| label: load-boundaries-n-metadata
+
 caz_boundaries <- st_read(file.path(here(),"data_raw","CAZ_boundaries.gpkg"))
 caz_metadata <- read_csv(file.path(here(),"data_raw","CAZ_list.csv"))
 ```
 
 ## Processing Buffers
+
+Creating buffer zones at different distances around CAZ boundaries for proximity analysis.
 
 ```{r}
 #| label: make-buffers
@@ -75,6 +90,8 @@ caz_buffers <- lapply(buffers, \(buff_dist) {
 }) |>
   bind_rows()
 ```
+
+Saving buffer zones to file for use in subsequent analyses.
 
 ```{r}
 #| label: save-buffers

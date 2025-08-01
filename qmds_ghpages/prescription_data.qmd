@@ -16,6 +16,12 @@ The prescription data is sourced from OpenPrescribing.net, which provides monthl
 
 This analysis forms the core of our investigation into the potential health impacts of Clean Air Zones.
 
+## Setup
+
+### Package Installation
+
+Loading required packages for spatial analysis and web scraping.
+
 ```{r}
 #| label: packages
 #| message: false
@@ -38,11 +44,15 @@ sapply(pkgs, require, character.only = TRUE)
 
 ## Downloading data
 
+Loading Sub-ICB boundary data for geographic reference.
+
 ```{r}
 subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
 ```
 
 ### SABA
+
+Downloading SABA prescription data from OpenPrescribing for all Sub-ICB areas.
 
 ```{r}
 #| label: download-saba
@@ -75,9 +85,11 @@ if (!file.exists(file.path(here(),"data_raw","all_saba.csv"))){
 }
 ```
 
-## All BFN groups
+## All BNF groups
 
-Downloading the data for all BFN groups (API limits might apply)
+### BNF Code Discovery
+
+Extracting all available BNF codes from the OpenPrescribing website for comprehensive data download.
 
 ```{r}
 #| label: download-all

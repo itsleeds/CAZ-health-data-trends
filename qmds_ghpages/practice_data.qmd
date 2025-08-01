@@ -14,6 +14,12 @@ The analysis uses data from OpenPrescribing.net, which provides comprehensive in
 
 By mapping GP practices in relation to CAZ boundaries, we can create meaningful comparison groups for evaluating the health impacts of air quality interventions.
 
+## Setup
+
+### Package Installation
+
+Loading required packages for spatial analysis and web scraping.
+
 ```{r}
 #| label: packages
 #| message: false
@@ -37,6 +43,8 @@ sapply(pkgs, require, character.only = TRUE)
 
 ### Sub-ICB 
 
+Downloading Sub-ICB (Clinical Commissioning Group) boundary data from OpenPrescribing.
+
 ```{r}
 #| label: download-ccg-boundaries
 #| warning: false
@@ -59,6 +67,8 @@ if (!file.exists("data_raw/subicb_boundaries.gpkg")){
 ### GP practices
 
 Obtaining the location of GP practices from OpenPrescribing for each Sub-ICB
+
+Downloading GP practice locations for each Sub-ICB area from the OpenPrescribing API.
 
 ```{r}
 #| label: download-gp-locations
@@ -88,13 +98,16 @@ if (!file.exists("data_raw/gp_locations.gpkg")){
 
 ### Classification based on location from CAZ
 
+Loading previously created CAZ buffer zones for spatial analysis.
+
 ```{r}
 #| label: load-caz-buffers
 
 caz_buffers <- st_read(file.path(here(),"data_raw","CAZ_buffers.gpkg"))
 ```
 
-Sub-setting the practices within the buffers
+Identifying GP practices located within CAZ buffer zones.
+
 ```{r}
 #| label: subset-practices
 
@@ -102,7 +115,8 @@ caz_practices <- all_practices[caz_buffers,]
 ```
 
 
-Detecting intersections and extracting the minimum buffer size
+Classifying practices by their distance from CAZ boundaries and assigning CAZ names.
+
 ```{r}
 #| label: practices-classification
 

@@ -43,16 +43,20 @@ if (!("fingertipsR" %in% installed.packages())){
 library(fingertipsR)
 ```
 
+## Data Acquisition
 
+### Profile Discovery
 
-Downloading profile list
+Retrieving the complete list of available health data profiles from the Fingertips platform.
 
 ```{r}
 profile_lst <- profiles()
 head(profile_lst)
 ```
 
-Indicator list for Asthma domain (code `8000009`)
+### Asthma Indicators
+
+Extracting health indicators specifically for asthma conditions using domain code 8000009.
 
 ```{r}
 indicator_lst_asthma <- indicators(DomainID = 8000009)
@@ -62,7 +66,9 @@ indicator_lst_asthma |>
   knitr::kable()
 ```
 
-Indicator list for Respiratory disease (code `29`)
+### Respiratory Disease Indicators
+
+Obtaining indicators for broader respiratory diseases using profile code 29.
 
 ```{r}
 indicator_lst_resp <- indicators(ProfileID = 29)
@@ -72,22 +78,34 @@ indicator_lst_resp |>
   knitr::kable()
 ```
 
-Selecting the codes for Respiratory profile
+### Indicator Selection
+
+Creating a focused list of respiratory indicator IDs for subsequent analysis.
 
 ```{r}
 sel_indicator <- indicator_lst_resp |>
   pull(IndicatorID) 
 ```
 
-Indicators are reported for different area types. The next code extracts the area types for each indicator.
+### Area Type Mapping
+
+Determining which geographic area types are available for each respiratory health indicator.
 
 ```{r}
 area_avail_ind <- do.call(bind_rows,lapply(sel_indicator,\(x) indicator_areatypes(IndicatorID = x)))
 ```
 
+### Geographic Classifications
+
+Retrieving all available area type classifications for spatial analysis.
+
 ```{r}
 area_ty_lst <- area_types()
 ```
+
+### Data Integration
+
+Joining indicator and area type information with descriptive names for clarity.
 
 ```{r}
 area_avail_ind_names <- area_avail_ind |>
@@ -109,7 +127,9 @@ slice_sample(area_avail_ind_names,n = 15) |>
   knitr::kable()
 ```
 
-Data for one indicator of the Respiratory profile
+### Sample Data Extraction
+
+Downloading actual health data for the first available respiratory indicator.
 
 ```{r}
 temp_data <- fingertips_data(
@@ -119,8 +139,11 @@ temp_data <- fingertips_data(
 
 ```
 
+### Data Preparation
+
+Preparing sample data for visualisation by selecting the most common area type and random sample areas.
+
 ```{r}
-# Code from vignette 
 cols <- c("IndicatorID", "AreaCode", "ParentName", "Sex", "Timeperiod", "Value")
 
 area_type_name <- table(temp_data$AreaType) # tally each group in the AreaType field
@@ -146,7 +169,11 @@ ggplot(data,aes(x = Timeperiod,y = Value, col = AreaCode ,group = AreaCode))+
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-## Compiling a list of indicators from the Respiratory and Asthma domain that are available for lower and upper tier LA
+## Comprehensive Indicator Analysis
+
+### Combined Dataset Creation
+
+Merging respiratory and asthma indicators to create a comprehensive dataset for analysis.
 
 ```{r}
 indicator_lst_all <- bind_rows(indicator_lst_resp,indicator_lst_asthma)
@@ -154,7 +181,9 @@ indicator_lst_all <- bind_rows(indicator_lst_resp,indicator_lst_asthma)
 sel_indicator_all <- indicator_lst_all |> pull(IndicatorID) |> unique()
 ```
 
-The following code will extract the indicators that are available for lower/upper LA
+### Local Authority Data Filtering
+
+Extracting indicators available at local authority and practice levels for geographic analysis.
 
 ```{r}
 area_avail_ind_all <- do.call(bind_rows,lapply(sel_indicator_all,\(x) indicator_areatypes(IndicatorID = x)))

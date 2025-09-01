@@ -11,6 +11,10 @@ data_raw/*
 
 gp_patients/
 gp_patients/*
+
+gp_patients_age/
+gp_patients_age/*
+
 /.quarto/
 
 _site/*

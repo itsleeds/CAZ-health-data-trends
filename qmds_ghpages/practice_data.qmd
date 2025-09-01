@@ -282,6 +282,131 @@ if (!file.exists(file.path(here(),"data_raw","practice_patients.csv"))){
 
 ```
 
+We can also download data to know the number of registered patients by year of age and sex 
+
+```{r}
+#| label: download-resgistere-patients
+
+if (!file.exists(file.path(here(),"data_raw","practice_patients_age.csv"))){
+  
+  get_patients <- function(){
+  base_u <- "https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/"
+  
+  my_grid <- expand.grid(month = tolower(month.name), year = 2020:2024)
+  my_grid$u <- paste(my_grid$month, my_grid$year, sep = "-")
+  
+  folder_path <- "gp_patients_age"
+  
+  dir.create(path = folder_path, showWarnings = F)
+  
+  cur_files <- tools::file_path_sans_ext(list.files(folder_path))
+  
+  my_grid <- my_grid[!(my_grid$u %in% cur_files), ]
+  
+  for (i in my_grid$u) {
+    print(paste0(base_u, i))
+    w <- read_html(paste0(base_u, i))
+    
+    links <- w  |> html_nodes("a")  |> html_attr("href")
+    
+    my_link <- links[grep(links, pattern = "gp-reg-pat-prac-sing-age-(fe)?male")]
+
+    for (tlink in my_link){
+      download.file(
+        url = tlink,
+        destfile = paste0(folder_path, "/", i, ".", tools::file_ext(tlink)),
+        mode = "wb"
+        )
+
+    }
+    
+    Sys.sleep(rnorm(1, mean = 5))
+  }
+  
+  # List all ZIP files in the folder
+  zip_files <- list.files(path = folder_path,
+                          pattern = "\\.zip$",
+                          full.names = TRUE)
+  
+  # Extract each ZIP file
+  lapply(zip_files, function(zip_file) {
+    # Create a temporary directory for extraction
+    temp_dir <- tempfile()
+    dir.create(temp_dir)
+    
+    # Extract the ZIP file into the temporary directory
+    unzip(zip_file, exdir = temp_dir)
+    
+    # List extracted files
+    extracted_files <- list.files(path = temp_dir, full.names = TRUE)
+    
+    # Move and rename each extracted file to the original folder
+    lapply(extracted_files, function(file) {
+      file_extension <- tools::file_ext(file)
+      new_name <- file.path(folder_path,
+                            paste0(
+                              tools::file_path_sans_ext(basename(zip_file)),
+                              ".",
+                              file_extension
+                            ))
+      file.rename(file, new_name)
+    })
+    
+    
+    # Remove the temporary directory
+    unlink(temp_dir, recursive = TRUE)
+  })
+  
+  
+  
+  all_data <- lapply(list.files(
+    path = "gp_patients_age",
+    pattern = "\\.csv$",
+    full.names = T
+  ),
+  \(x) {
+    read_csv(x) |>
+      mutate(
+        month = str_extract(basename(x), "[a-zA-Z]+(?=-)"),
+        year = str_extract(basename(x), "\\d{4}")
+      )
+  })
+  
+  
+  common_names <- reduce(lapply(all_data, names), intersect)
+  
+  all_data_df <- do.call(rbind, lapply(all_data, \(x) {
+    x[, common_names]
+  })) |>
+    mutate(year = as.integer(year))
+  
+  write_csv(all_data_df,
+            file = file.path(here(),"data_raw","practice_patients_age.csv"))
+  
+  }
+  
+  
+  get_patients()
+  
+  
+} else{
+  all_data_df_age <- read_csv(file.path(here(),"data_raw","practice_patients_age.csv"),
+                          col_types = cols(
+  PUBLICATION = col_character(),
+  EXTRACT_DATE = col_character(),
+  TYPE = col_character(),
+  CODE = col_character(),
+  POSTCODE = col_character(),
+  SEX = col_character(),
+  AGE = col_character(),
+  NUMBER_OF_PATIENTS = col_double(),
+  month = col_character(),
+  year = col_double()
+))
+}
+```
+
+
 ### Visualisation
 
 ```{r}

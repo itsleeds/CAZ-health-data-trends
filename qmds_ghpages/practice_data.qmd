@@ -307,7 +307,7 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients.csv"))) {
 We can also download data to know the number of registered patients by year of age and sex 
 
 ```{r}
-#| label: download-resgistere-patients
+#| label: download-resgistere-patients-age
 
 if (!file.exists(file.path(here(), "data_raw", "practice_patients_age.csv"))) {
   get_patients <- function() {
@@ -524,9 +524,10 @@ sf_practices_age <- all_practices |>
   ) |>
   drop_na()
 
-
-ggplot(sf_practices_age, aes(col = mean_age)) +
-  geom_sf(alpha = 0.6) +
+sf_practices_age |>
+  arrange(mean_age) |>
+  ggplot(aes(col = mean_age)) +
+  geom_sf(alpha = 0.7) +
   theme_void() +
   scale_color_continuous(palette = "viridis")
 

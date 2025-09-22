@@ -27,6 +27,8 @@ website:
         contents:
           - href: qmds_ghpages/CAZ_prescription_trends.qmd
             text: Trends by practice location
+          - href: qmds_ghpages/CAZ_practice_age_analysis.qmd
+            text: An exploration of age of registered patients
       - qmds_ghpages/about.qmd
 
 format:

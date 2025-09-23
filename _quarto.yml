@@ -29,7 +29,7 @@ website:
       - section: Analysis
         contents:
           - href: qmds_ghpages/CAZ_practice_age_analysis.qmd
-            text: Practice characteristics by CAz boundaries
+            text: Practice characteristics by CAZ boundaries
           - href: qmds_ghpages/CAZ_prescription_trends.qmd
             text: Trends by practice location
       - qmds_ghpages/about.qmd

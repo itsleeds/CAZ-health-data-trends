@@ -1,5 +1,5 @@
 ---
-title: "CAZ_prescription_trends"
+title: "Age groups and size of practice by boundary types"
 ---
 
 ## Overview
@@ -56,7 +56,7 @@ CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
 Loading patient registration data for calculating prescription rates.
 
 ```{r}
-#| label: read-data-patients
+#| label: read-data-patients-age
 
 patient_age_df <- read_csv("data_raw/practice_patients_age.csv")
 
@@ -75,6 +75,20 @@ patient_avg_age <- as.data.table(patient_age_df)[,
 patient_avg_age$month <- match(patient_avg_age$month, tolower(month.name))
 ```
 
+```{r}
+#| label: calculate-practice-size
+
+patient_num_df <- as.data.table(patient_age_df)[,
+  .(NUMBER_OF_PATIENTS = sum(NUMBER_OF_PATIENTS)),
+  by = .(ORG_CODE, month, year)
+][ORG_CODE %in% pract_classed$code]
+
+```
+
+## EDA
+
+### Age distribution 
+
 A quick exploration of the mean age of patients for different CAZ boundaries
 
 ```{r}
@@ -82,17 +96,18 @@ A quick exploration of the mean age of patients for different CAZ boundaries
 
 tmap_mode("view")
 
-pract_classed |> inner_join(patient_avg_age |>
+pract_classed |>
+  inner_join(
+    patient_avg_age |>
       filter(year == 2024, month == 12),
     by = c("code" = "ORG_CODE")
   ) |>
   tm_shape() +
   tm_dots("mean_age")
 
-
 ```
-```{r}
 
+```{r}
 pract_classed |>
   inner_join(
     patient_avg_age |>
@@ -103,5 +118,50 @@ pract_classed |>
   geom_jitter(alpha = 0.2, col = "dodgerblue") +
   geom_boxplot(outlier.shape = NA, varwidth = TRUE) +
   facet_wrap(CAZ_name ~ .)
+```
 
+#### Variations in mean_age
+
+```{r}
+var_mean_age <- patient_avg_age |>
+  mutate(
+    ym = paste0(year, sprintf("%02d", month)) |> as.numeric(),
+    ym_date = ymd(paste0(ym, "01"))
+  ) |>
+  mutate(baseline = if_else(ym == min(ym), mean_age, NA), .by = ORG_CODE) |>
+  mutate(
+    baseline = if_else(is.na(baseline), sum(baseline, na.rm = TRUE), baseline),
+    .by = ORG_CODE
+  ) |>
+  mutate(mean_age_std = mean_age - baseline)
+
+
+ggplot(var_mean_age, aes(mean_age_std)) +
+  stat_ecdf() +
+  theme_minimal()
+
+```
+
+### Size distribution
+
+```{r}
+sf_practices_size <- pract_classed |>
+  left_join(
+    patient_num_df |>
+      summarise(
+        across(NUMBER_OF_PATIENTS, \(x) median(x, na.rm = T)),
+        .by = ORG_CODE
+      ),
+    by = c("code" = "ORG_CODE")
+  )
+
+```
+
+```{r}
+sf_practices_size |>
+  ggplot(aes(x = factor(buffer_km), y = NUMBER_OF_PATIENTS)) +
+  geom_jitter(alpha = 0.2, col = "dodgerblue") +
+  geom_boxplot(outlier.shape = NA, varwidth = TRUE) +
+  scale_y_sqrt() +
+  facet_wrap(CAZ_name ~ .)
 ```

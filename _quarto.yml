@@ -4,6 +4,9 @@ project:
 
 execute: 
   freeze: auto  # re-render only when source changes
+  warning: false
+  error: false
+      
 
 website:
   title: "CAZ Health Indicators Trends"
@@ -25,10 +28,10 @@ website:
             text: Health indicators
       - section: Analysis
         contents:
+          - href: qmds_ghpages/CAZ_practice_age_analysis.qmd
+            text: Practice characteristics by CAz boundaries
           - href: qmds_ghpages/CAZ_prescription_trends.qmd
             text: Trends by practice location
-          - href: qmds_ghpages/CAZ_practice_age_analysis.qmd
-            text: An exploration of age of registered patients
       - qmds_ghpages/about.qmd
 
 format:

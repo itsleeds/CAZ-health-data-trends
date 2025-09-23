@@ -224,7 +224,7 @@
     "text": "TBC",
     "crumbs": [
       "Analysis",
-      "Practice characteristics by CAz boundaries"
+      "Practice characteristics by CAZ boundaries"
     ]
   },
   {
@@ -235,7 +235,7 @@
     "text": "TBC",
     "crumbs": [
       "Analysis",
-      "Practice characteristics by CAz boundaries"
+      "Practice characteristics by CAZ boundaries"
     ]
   },
   {
@@ -246,7 +246,7 @@
     "text": "Setup\n\nPackage Installation\nLoading required packages for data analysis and visualisation.\n\n\nShow the code\noptions(repos = c(CRAN = \"https://cloud.r-project.org\"))\nif (!require(\"remotes\")) {\n  install.packages(\"remotes\")\n}\npkgs = c(\n  \"sf\",\n  \"tidyverse\",\n  \"here\",\n  \"tmap\",\n  \"data.table\"\n)\n\nremotes::install_cran(pkgs)\nsapply(pkgs, require, character.only = TRUE)\n\n\n        sf  tidyverse       here       tmap data.table \n      TRUE       TRUE       TRUE       TRUE       TRUE",
     "crumbs": [
       "Analysis",
-      "Practice characteristics by CAz boundaries"
+      "Practice characteristics by CAZ boundaries"
     ]
   },
   {
@@ -257,7 +257,7 @@
     "text": "Loading data\n\nGP practices\nLoading spatial and administrative data for GP practices and CAZ areas.\n\n\nShow the code\nsubicb_boundaries &lt;- st_read(file.path(\n  here(),\n  \"data_raw\",\n  \"subicb_boundaries.gpkg\"\n))\n\n\nReading layer `subicb_boundaries' from data source \n  `C:\\temp_jf\\CAZ-health-data-trends\\data_raw\\subicb_boundaries.gpkg' \n  using driver `GPKG'\nSimple feature collection with 106 features and 4 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 87318.43 ymin: 7053.782 xmax: 655646.4 ymax: 657547.7\nProjected CRS: OSGB36 / British National Grid\n\n\nShow the code\npract_classed &lt;- st_read(\"data_raw/CAZ_practices.gpkg\")\n\n\nReading layer `CAZ_practices' from data source \n  `C:\\temp_jf\\CAZ-health-data-trends\\data_raw\\CAZ_practices.gpkg' \n  using driver `GPKG'\nSimple feature collection with 1362 features and 6 fields\nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 346814 ymin: 91824 xmax: 472242 ymax: 574443\nProjected CRS: OSGB36 / British National Grid\n\n\nShow the code\nall_practices &lt;- st_read(file.path(here(), \"data_raw\", \"gp_locations.gpkg\"))\n\n\nReading layer `gp_locations' from data source \n  `C:\\temp_jf\\CAZ-health-data-trends\\data_raw\\gp_locations.gpkg' \n  using driver `GPKG'\nSimple feature collection with 11968 features and 4 fields (with 7 geometries empty)\nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 90774 ymin: 10282 xmax: 655043 ymax: 653236\nProjected CRS: OSGB36 / British National Grid\n\n\nShow the code\nCAZ_lst &lt;- read_csv(\"data_raw/CAZ_list.csv\")\n\n\n\n\nPatient data\nLoading patient registration data for calculating prescription rates.\n\n\nShow the code\npatient_age_df &lt;- read_csv(\"data_raw/practice_patients_age.csv\")\n\npatient_avg_age &lt;- as.data.table(patient_age_df)[,\n  `:=`(\n    lower = as.numeric(str_extract(AGE_GROUP, \"(?&lt;=(\\\\(|\\\\[))\\\\d{1,2}\")),\n    upper = as.numeric(str_extract(AGE_GROUP, \"\\\\d{2,3}(?=(\\\\)|\\\\]))\"))\n  )\n][,\n  midpoint := 0.5 * (lower + upper)\n][,\n  .(mean_age = weighted.mean(midpoint, NUMBER_OF_PATIENTS)),\n  by = .(ORG_CODE, month, year)\n][ORG_CODE %in% pract_classed$code]\n\npatient_avg_age$month &lt;- match(patient_avg_age$month, tolower(month.name))\n\n\n\n\nShow the code\npatient_num_df &lt;- as.data.table(patient_age_df)[,\n  .(NUMBER_OF_PATIENTS = sum(NUMBER_OF_PATIENTS)),\n  by = .(ORG_CODE, month, year)\n][ORG_CODE %in% pract_classed$code]",
     "crumbs": [
       "Analysis",
-      "Practice characteristics by CAz boundaries"
+      "Practice characteristics by CAZ boundaries"
     ]
   },
   {
@@ -268,7 +268,7 @@
     "text": "EDA\n\nAge distribution\nA quick exploration of the mean age of patients for different CAZ boundaries\n\n\nShow the code\ntmap_mode(\"view\")\n\npract_classed |&gt;\n  inner_join(\n    patient_avg_age |&gt;\n      filter(year == 2024, month == 12),\n    by = c(\"code\" = \"ORG_CODE\")\n  ) |&gt;\n  tm_shape() +\n  tm_dots(\"mean_age\")\n\n\n\n\n\n\n\n\n\nShow the code\npract_classed |&gt;\n  inner_join(\n    patient_avg_age |&gt;\n      filter(year == 2024, month == 12),\n    by = c(\"code\" = \"ORG_CODE\")\n  ) |&gt;\n  ggplot(aes(x = factor(buffer_km), y = mean_age)) +\n  geom_jitter(alpha = 0.2, col = \"dodgerblue\") +\n  geom_boxplot(outlier.shape = NA, varwidth = TRUE) +\n  facet_wrap(CAZ_name ~ .)\n\n\n\n\n\n\n\n\n\n\nVariations in mean_age\n\n\nShow the code\nvar_mean_age &lt;- patient_avg_age |&gt;\n  mutate(\n    ym = paste0(year, sprintf(\"%02d\", month)) |&gt; as.numeric(),\n    ym_date = ymd(paste0(ym, \"01\"))\n  ) |&gt;\n  mutate(baseline = if_else(ym == min(ym), mean_age, NA), .by = ORG_CODE) |&gt;\n  mutate(\n    baseline = if_else(is.na(baseline), sum(baseline, na.rm = TRUE), baseline),\n    .by = ORG_CODE\n  ) |&gt;\n  mutate(mean_age_std = mean_age - baseline)\n\n\nggplot(var_mean_age, aes(mean_age_std)) +\n  stat_ecdf() +\n  theme_minimal()\n\n\n\n\n\n\n\n\n\n\n\n\nSize distribution\n\n\nShow the code\nsf_practices_size &lt;- pract_classed |&gt;\n  left_join(\n    patient_num_df |&gt;\n      summarise(\n        across(NUMBER_OF_PATIENTS, \\(x) median(x, na.rm = T)),\n        .by = ORG_CODE\n      ),\n    by = c(\"code\" = \"ORG_CODE\")\n  )\n\n\n\n\nShow the code\nsf_practices_size |&gt;\n  ggplot(aes(x = factor(buffer_km), y = NUMBER_OF_PATIENTS)) +\n  geom_jitter(alpha = 0.2, col = \"dodgerblue\") +\n  geom_boxplot(outlier.shape = NA, varwidth = TRUE) +\n  scale_y_sqrt() +\n  facet_wrap(CAZ_name ~ .)",
     "crumbs": [
       "Analysis",
-      "Practice characteristics by CAz boundaries"
+      "Practice characteristics by CAZ boundaries"
     ]
   },
   {

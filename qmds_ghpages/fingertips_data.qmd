@@ -23,21 +23,25 @@ By combining Fingertips data with our prescription analysis, we can build a more
 #| message: false
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
-if (!require("remotes")) install.packages("remotes")
+if (!require("remotes")) {
+  install.packages("remotes")
+}
 pkgs = c(
-    "sf",
-    "tidyverse",
-    "here",
-    "tmap"
+  "sf",
+  "tidyverse",
+  "here",
+  "tmap"
 )
 
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 
-if (!("fingertipsR" %in% installed.packages())){
-  remotes::install_github("rOpenSci/fingertipsR",
-                          build_vignettes = TRUE,
-                          quiet = TRUE)
+if (!("fingertipsR" %in% installed.packages())) {
+  remotes::install_github(
+    "rOpenSci/fingertipsR",
+    build_vignettes = TRUE,
+    quiet = TRUE
+  )
 }
 
 library(fingertipsR)
@@ -62,7 +66,7 @@ Extracting health indicators specifically for asthma conditions using domain cod
 indicator_lst_asthma <- indicators(DomainID = 8000009)
 
 indicator_lst_asthma |>
-  head(10) |> 
+  head(10) |>
   knitr::kable()
 ```
 
@@ -73,8 +77,8 @@ Obtaining indicators for broader respiratory diseases using profile code 29.
 ```{r}
 indicator_lst_resp <- indicators(ProfileID = 29)
 
-indicator_lst_resp |> 
-  head(10) |> 
+indicator_lst_resp |>
+  head(10) |>
   knitr::kable()
 ```
 
@@ -84,7 +88,7 @@ Creating a focused list of respiratory indicator IDs for subsequent analysis.
 
 ```{r}
 sel_indicator <- indicator_lst_resp |>
-  pull(IndicatorID) 
+  pull(IndicatorID)
 ```
 
 ### Area Type Mapping
@@ -92,7 +96,10 @@ sel_indicator <- indicator_lst_resp |>
 Determining which geographic area types are available for each respiratory health indicator.
 
 ```{r}
-area_avail_ind <- do.call(bind_rows,lapply(sel_indicator,\(x) indicator_areatypes(IndicatorID = x)))
+area_avail_ind <- do.call(
+  bind_rows,
+  lapply(sel_indicator, \(x) indicator_areatypes(IndicatorID = x))
+)
 ```
 
 ### Geographic Classifications
@@ -114,16 +121,16 @@ area_avail_ind_names <- area_avail_ind |>
       select(IndicatorID, IndicatorName) |>
       unique(),
     by = join_by(IndicatorID)
-  ) |> 
+  ) |>
   left_join(
-    area_ty_lst |> 
-      select(AreaTypeID,AreaTypeName) |> 
+    area_ty_lst |>
+      select(AreaTypeID, AreaTypeName) |>
       unique(),
-    by=join_by(AreaTypeID)
+    by = join_by(AreaTypeID)
   )
 
-slice_sample(area_avail_ind_names,n = 15) |>
-  select(-IndicatorID,-AreaTypeID) |>
+slice_sample(area_avail_ind_names, n = 15) |>
+  select(-IndicatorID, -AreaTypeID) |>
   knitr::kable()
 ```
 
@@ -135,7 +142,7 @@ Downloading actual health data for the first available respiratory indicator.
 temp_data <- fingertips_data(
   IndicatorID = area_avail_ind$IndicatorID[1],
   AreaTypeID = area_avail_ind$AreaTypeID[1]
-  )
+)
 
 ```
 
@@ -152,20 +159,25 @@ area_type_name <- area_type_name[area_type_name == max(area_type_name)] # pick t
 area_type_name <- names(area_type_name) # retrieve the name
 
 set.seed(1234)
-samp_areas <- sample(temp_data$AreaCode |> unique(),5)
+samp_areas <- sample(temp_data$AreaCode |> unique(), 5)
 
 
-data <- temp_data[temp_data$AreaType == area_type_name & temp_data$AreaCode %in% samp_areas,
-                  cols]
+data <- temp_data[
+  temp_data$AreaType == area_type_name & temp_data$AreaCode %in% samp_areas,
+  cols
+]
 ```
 
 
 We are going to show the historic data for five areas of type `r area_type_name`
 
 ```{r}
-ggplot(data,aes(x = Timeperiod,y = Value, col = AreaCode ,group = AreaCode))+
-  geom_line()+
-  labs(title = area_avail_ind_names$IndicatorName[1],subtitle = paste0("Showning a sample of ", area_type_name))+
+ggplot(data, aes(x = Timeperiod, y = Value, col = AreaCode, group = AreaCode)) +
+  geom_line() +
+  labs(
+    title = area_avail_ind_names$IndicatorName[1],
+    subtitle = paste0("Showning a sample of ", area_type_name)
+  ) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
@@ -176,7 +188,7 @@ ggplot(data,aes(x = Timeperiod,y = Value, col = AreaCode ,group = AreaCode))+
 Merging respiratory and asthma indicators to create a comprehensive dataset for analysis.
 
 ```{r}
-indicator_lst_all <- bind_rows(indicator_lst_resp,indicator_lst_asthma)
+indicator_lst_all <- bind_rows(indicator_lst_resp, indicator_lst_asthma)
 
 sel_indicator_all <- indicator_lst_all |> pull(IndicatorID) |> unique()
 ```
@@ -186,7 +198,10 @@ sel_indicator_all <- indicator_lst_all |> pull(IndicatorID) |> unique()
 Extracting indicators available at local authority and practice levels for geographic analysis.
 
 ```{r}
-area_avail_ind_all <- do.call(bind_rows,lapply(sel_indicator_all,\(x) indicator_areatypes(IndicatorID = x)))
+area_avail_ind_all <- do.call(
+  bind_rows,
+  lapply(sel_indicator_all, \(x) indicator_areatypes(IndicatorID = x))
+)
 
 LA_ind_names_all <- area_avail_ind_all |>
   left_join(
@@ -194,13 +209,13 @@ LA_ind_names_all <- area_avail_ind_all |>
       select(IndicatorID, IndicatorName) |>
       unique(),
     by = join_by(IndicatorID)
-  ) |> 
+  ) |>
   left_join(
-    area_ty_lst |> 
-      select(AreaTypeID,AreaTypeName) |> 
+    area_ty_lst |>
+      select(AreaTypeID, AreaTypeName) |>
       unique(),
-    by=join_by(AreaTypeID)
-  ) |> 
-  filter(str_detect(AreaTypeName,pattern = "(Upper|Lower|Practice|Sub-ICB)"))
+    by = join_by(AreaTypeID)
+  ) |>
+  filter(str_detect(AreaTypeName, pattern = "(Upper|Lower|Practice|Sub-ICB)"))
 ```
 

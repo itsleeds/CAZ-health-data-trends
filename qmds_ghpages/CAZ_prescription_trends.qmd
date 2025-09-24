@@ -28,13 +28,15 @@ Loading required packages for data analysis and visualisation.
 #| message: false
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
-if (!require("remotes")) install.packages("remotes")
+if (!require("remotes")) {
+  install.packages("remotes")
+}
 pkgs = c(
-    "sf",
-    "tidyverse",
-    "here",
-    "tmap",
-    "data.table"
+  "sf",
+  "tidyverse",
+  "here",
+  "tmap",
+  "data.table"
 )
 
 remotes::install_cran(pkgs)
@@ -50,9 +52,13 @@ Loading spatial and administrative data for GP practices and CAZ areas.
 
 ```{r}
 #| label: read-data-pract
-subicb_boundaries <- st_read(file.path(here(),"data_raw","subicb_boundaries.gpkg"))
+subicb_boundaries <- st_read(file.path(
+  here(),
+  "data_raw",
+  "subicb_boundaries.gpkg"
+))
 pract_classed <- st_read("data_raw/CAZ_practices.gpkg")
-all_practices <- st_read(file.path(here(),"data_raw","gp_locations.gpkg"))
+all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"))
 CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
 ```
 
@@ -65,7 +71,7 @@ Loading patient registration data for calculating prescription rates.
 
 patient_num_df <- read_csv("data_raw/practice_patients.csv")
 
-patient_num_df$month <- match(patient_num_df$month,tolower(month.name))
+patient_num_df$month <- match(patient_num_df$month, tolower(month.name))
 ```
 
 ### Prescription data
@@ -75,28 +81,57 @@ Loading SABA prescription data for respiratory health analysis.
 ```{r}
 #| label: read-data-prescr-saba
 
-all_saba_raw <- read_csv(file = file.path(here(),"data_raw","all_saba.csv"))
+all_saba_raw <- read_csv(file = file.path(here(), "data_raw", "all_saba.csv"))
 ```
+
 
 Loading comprehensive BNF prescription data for broader medication analysis.
 
 ```{r}
 #| label: read-data-prescr-main
 
-get_all_data <- function(group){
-  lst_files <- list.files("data_raw/bnf_all/",pattern = paste0("^\\d{",group,"}_"),full.names = TRUE)
+get_all_data <- function(group) {
+  lst_files <- list.files(
+    "data_raw/bnf_all/",
+    pattern = paste0("^\\d{", group, "}_\\d{4}"),
+    full.names = TRUE
+  )
   lapply(
     lst_files,
-    \(i){
-      fread(i)[,bnf := str_extract(pattern = paste0("^\\d{",group,"}"),string = basename(i))]
-      }) |> rbindlist()
-  
+    \(i) {
+      fread(i)[,
+        bnf := str_extract(
+          pattern = paste0("^\\d{", group, "}"),
+          string = basename(i)
+        )
+      ]
+    }
+  ) |>
+    rbindlist()
 }
 
 all_data <- get_all_data(2)
 ```
 
+Loading data for Montelukast
+```{r}
+get_code_data <- function(code) {
+  lst_files <- list.files(
+    "data_raw/bnf_all/",
+    pattern = code,
+    full.names = TRUE
+  )
+  lapply(
+    lst_files,
+    \(i) {
+      fread(i)[, bnf := str_extract(pattern = code, string = basename(i))]
+    }
+  ) |>
+    rbindlist()
+}
 
+all_mtlkt_data <- get_code_data(code = "0303020G0")
+```
 
 
 ## Preparing data
@@ -107,25 +142,39 @@ Creating location-based classifications for GP practices relative to CAZ boundar
 
 ```{r}
 CAZ_practices <- pract_classed |>
-  mutate(location_class = case_when(buffer_km==0~"within CAZ",
-                                    buffer_km<=1~"within 1km",
-                                    buffer_km<=5~"within 5km",
-                                    TRUE~"out CAZ")) |> 
-  mutate(location_class = factor(location_class,
-                                 levels = c("within CAZ","within 1km","within 5km","out CAZ","Control"),
-                                 ordered = T)) 
+  mutate(
+    location_class = case_when(
+      buffer_km == 0 ~ "within CAZ",
+      buffer_km <= 1 ~ "within 1km",
+      buffer_km <= 5 ~ "within 5km",
+      TRUE ~ "out CAZ"
+    )
+  ) |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
 
-all_valid_subicb_codes <- subicb_boundaries |> 
-  st_drop_geometry() |> 
-  filter(str_detect(name,"LONDON",negate = TRUE)) |>
+all_valid_subicb_codes <- subicb_boundaries |>
+  st_drop_geometry() |>
+  filter(str_detect(name, "LONDON", negate = TRUE)) |>
   pull(code)
 
 
-all_other_codes <- all_practices |> 
-  st_drop_geometry() |> 
+all_other_codes <- all_practices |>
+  st_drop_geometry() |>
   filter(!(par_code %in% all_valid_subicb_codes)) |>
   pull(code)
-  
+
 
 ```
 
@@ -135,23 +184,33 @@ Filtering SABA prescription data for CAZ and control areas with patient populati
 
 ```{r}
 
-CAZ_SABA <- all_saba_raw |> 
-  filter(org_id %in% CAZ_practices$code) |> 
-  mutate(month = month(date),
-         year = year(date)) |> 
-  left_join(patient_num_df |> select(CODE,NUMBER_OF_PATIENTS,month,year),
-            by = c("org_id" = "CODE","month","year"))  
+CAZ_SABA <- all_saba_raw |>
+  filter(org_id %in% CAZ_practices$code) |>
+  mutate(month = month(date), year = year(date)) |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("org_id" = "CODE", "month", "year")
+  )
 
 
-noCAZ_SABA <- all_saba_raw |> 
-  filter(!org_id %in% CAZ_practices$code,org_id %in% all_other_codes) |> 
-  mutate(month = month(date),
-         year = year(date)) |> 
-  left_join(patient_num_df,by = c("org_id" = "CODE","month","year")) |> 
-  mutate(location_class = "Control") |> 
-  mutate(location_class = factor(location_class,
-                                 levels = c("within CAZ","within 1km","within 5km","out CAZ","Control"),
-                                 ordered = T)) 
+noCAZ_SABA <- all_saba_raw |>
+  filter(!org_id %in% CAZ_practices$code, org_id %in% all_other_codes) |>
+  mutate(month = month(date), year = year(date)) |>
+  left_join(patient_num_df, by = c("org_id" = "CODE", "month", "year")) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
 
 ```
 
@@ -160,23 +219,73 @@ noCAZ_SABA <- all_saba_raw |>
 Filtering broader BNF prescription data for comprehensive medication analysis.
 
 ```{r}
-CAZ_bnf <- all_data[row_id %in% CAZ_practices$code,][,`:=`(month = month(date),
-         year = year(date))]  |> 
-  left_join(patient_num_df |>  select(CODE,NUMBER_OF_PATIENTS,month,year),
-            by = c("row_id" = "CODE","month","year"))
+CAZ_bnf <- all_data[row_id %in% CAZ_practices$code, ][, `:=`(
+  month = month(date),
+  year = year(date)
+)] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  )
 
-noCAZ_bnf <- all_data[!row_id %in% CAZ_practices$code&row_id %in% all_other_codes,][,`:=`(month = month(date),
-         year = year(date))] |> 
-  left_join(patient_num_df |>  select(CODE,NUMBER_OF_PATIENTS,month,year),
-            by = c("row_id" = "CODE","month","year")) |>  
-  mutate(location_class = "Control") |> 
-  mutate(location_class = factor(
-    location_class,
-    levels = c("within CAZ","within 1km","within 5km","out CAZ","Control"),
-    ordered = T)) 
+noCAZ_bnf <- all_data[
+  !row_id %in% CAZ_practices$code & row_id %in% all_other_codes,
+][, `:=`(month = month(date), year = year(date))] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  ) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
 
 ```
 
+### Subsetting data of Montelukast
+
+```{r}
+CAZ_mtlkst <- all_mtlkt_data[row_id %in% CAZ_practices$code, ][, `:=`(
+  month = month(date),
+  year = year(date)
+)] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  )
+
+noCAZ_mtlkst <- all_mtlkt_data[
+  !row_id %in% CAZ_practices$code & row_id %in% all_other_codes,
+][, `:=`(month = month(date), year = year(date))] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  ) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
+```
 
 ## Extracting trends
 
@@ -185,53 +294,67 @@ noCAZ_bnf <- all_data[!row_id %in% CAZ_practices$code&row_id %in% all_other_code
 Aggregating SABA prescription data for control areas (excluding London).
 
 ```{r}
-noCAZ_SABA_aggre <- noCAZ_SABA |> 
-  summarise(across(c(NUMBER_OF_PATIENTS,numerator,denominator),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,month,year,date)) |>
-  mutate(calc_value = numerator/denominator)
+noCAZ_SABA_aggre <- noCAZ_SABA |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
+      sum(x, na.rm = T)
+    }),
+    .by = c(location_class, month, year, date)
+  ) |>
+  mutate(calc_value = numerator / denominator)
 ```
 
 #### SABA ratio
 
 ```{r}
-plots_SABA_ratio <- CAZ_SABA |> 
-  left_join(CAZ_practices |> st_drop_geometry() |> 
-              select(code,location_class,CAZ_name),by = c("org_id"="code")) |> 
-  
-  summarise(across(c(NUMBER_OF_PATIENTS,numerator,denominator),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,CAZ_name,month,year,date)) |>
-  mutate(calc_value = numerator/denominator) |> 
-  nest(.by = c(CAZ_name)) |> 
-  left_join(CAZ_lst |> select(CAZ,Start),by = c("CAZ_name"= "CAZ")) |> 
-  mutate(trend_data = map2(data,Start,
-                           \(.x,.y){
-                             .x |> 
-                               bind_rows(noCAZ_SABA_aggre) |> 
-                               filter(year>=.y)
-                           })) |> 
-  mutate(plots = map2(data,trend_data,
-                      \(.x, .y){
-                        .x |> ggplot(aes(x = date,
-                                         y = calc_value,
-                                         colour = location_class))+
-                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
-                          geom_smooth(data = .y,
-                                      method = "lm",
-                                      formula = 'y ~ x',
-                                      se = F,
-                                      aes(linetype = location_class))+
-                          theme_minimal()+
-                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
-                          scale_y_continuous(limits = c(0,0.7))+
-                          scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
-                          guides(linetype = "none")
-  }),
-  plots = map2(plots,CAZ_name,\(.x,.y){
-    .x + labs(title = .y,
-              y = "SABA ratio",
-              col = "Location Class",
-              x = "")}
-              ))
+plots_SABA_ratio <- CAZ_SABA |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("org_id" = "code")
+  ) |>
+
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
+      sum(x, na.rm = T)
+    }),
+    .by = c(location_class, CAZ_name, month, year, date)
+  ) |>
+  mutate(calc_value = numerator / denominator) |>
+  nest(.by = c(CAZ_name)) |>
+  left_join(CAZ_lst |> select(CAZ, Start), by = c("CAZ_name" = "CAZ")) |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        bind_rows(noCAZ_SABA_aggre) |>
+        filter(year >= .y)
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(x = date, y = calc_value, colour = location_class)) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        scale_y_continuous(limits = c(0, 0.7)) +
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x + labs(title = .y, y = "SABA ratio", col = "Location Class", x = "")
+    })
+  )
 ```
 
 
@@ -240,7 +363,7 @@ plots_SABA_ratio <- CAZ_SABA |>
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_ratio$plots){
+for (i in plots_SABA_ratio$plots) {
   print(i)
 }
 ```
@@ -248,44 +371,64 @@ for (i in plots_SABA_ratio$plots){
 #### SABA numerator
 
 ```{r}
-plots_SABA_numerator <- CAZ_SABA |> 
-  left_join(CAZ_practices |> st_drop_geometry() |> 
-              select(code,location_class,CAZ_name),by = c("org_id"="code")) |> 
-  
-  summarise(across(c(NUMBER_OF_PATIENTS,numerator,denominator),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,CAZ_name,month,year,date)) |>
-  mutate(calc_value = numerator/denominator) |> 
-  nest(.by = c(CAZ_name)) |> 
-  left_join(CAZ_lst |> select(CAZ,Start),by = c("CAZ_name"= "CAZ")) |> 
-  mutate(trend_data = map2(data,Start,
-                           \(.x,.y){
-                             .x |> 
-                               bind_rows(noCAZ_SABA_aggre) |> 
-                               filter(year>=.y)
-                           })) |> 
-  mutate(plots = map2(data,trend_data,
-                      \(.x, .y){
-                        .x |> ggplot(aes(x = date,
-                                         y = numerator/NUMBER_OF_PATIENTS,
-                                         colour = location_class))+
-                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
-                          geom_smooth(data = .y,
-                                      method = "lm",
-                                      formula = 'y ~ x',
-                                      se = F,
-                                      aes(linetype = location_class))+
-                          theme_minimal()+
-                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
-                          # scale_y_continuous(limits = c(0,1))+
-                          scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
-                          guides(linetype = "none")
-  }),
-  plots = map2(plots,CAZ_name,\(.x,.y){
-    .x + labs(title = .y,
-              y = "Prescriptions of SABA inhalers per patient",
-              col = "Location Class",
-              x = "")}
-              ))
+plots_SABA_numerator <- CAZ_SABA |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("org_id" = "code")
+  ) |>
+
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
+      sum(x, na.rm = T)
+    }),
+    .by = c(location_class, CAZ_name, month, year, date)
+  ) |>
+  mutate(calc_value = numerator / denominator) |>
+  nest(.by = c(CAZ_name)) |>
+  left_join(CAZ_lst |> select(CAZ, Start), by = c("CAZ_name" = "CAZ")) |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        bind_rows(noCAZ_SABA_aggre) |>
+        filter(year >= .y)
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = numerator / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,1))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Prescriptions of SABA inhalers per patient",
+          col = "Location Class",
+          x = ""
+        )
+    })
+  )
 ```
 
 
@@ -294,7 +437,7 @@ plots_SABA_numerator <- CAZ_SABA |>
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_numerator$plots){
+for (i in plots_SABA_numerator$plots) {
   print(i)
 }
 ```
@@ -302,44 +445,64 @@ for (i in plots_SABA_numerator$plots){
 #### SABA denominator (all inhalers)
 
 ```{r}
-plots_SABA_denominator <- CAZ_SABA |> 
-  left_join(CAZ_practices |> st_drop_geometry() |> 
-              select(code,location_class,CAZ_name),by = c("org_id"="code")) |> 
-  
-  summarise(across(c(NUMBER_OF_PATIENTS,numerator,denominator),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,CAZ_name,month,year,date)) |>
-  mutate(calc_value = numerator/denominator) |> 
-  nest(.by = c(CAZ_name)) |> 
-  left_join(CAZ_lst |> select(CAZ,Start),by = c("CAZ_name"= "CAZ")) |> 
-  mutate(trend_data = map2(data,Start,
-                           \(.x,.y){
-                             .x |> 
-                               bind_rows(noCAZ_SABA_aggre) |> 
-                               filter(year>=.y)
-                           })) |> 
-  mutate(plots = map2(data,trend_data,
-                      \(.x, .y){
-                        .x |> ggplot(aes(x = date,
-                                         y = denominator/NUMBER_OF_PATIENTS,
-                                         colour = location_class))+
-                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
-                          geom_smooth(data = .y,
-                                      method = "lm",
-                                      formula = 'y ~ x',
-                                      se = F,
-                                      aes(linetype = location_class))+
-                          theme_minimal()+
-                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
-                          # scale_y_continuous(limits = c(0,1))+
-                          scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
-                          guides(linetype = "none")
-  }),
-  plots = map2(plots,CAZ_name,\(.x,.y){
-    .x + labs(title = .y,
-              y = "Prescriptions inhalers per patient",
-              col = "Location Class",
-              x = "")}
-              ))
+plots_SABA_denominator <- CAZ_SABA |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("org_id" = "code")
+  ) |>
+
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
+      sum(x, na.rm = T)
+    }),
+    .by = c(location_class, CAZ_name, month, year, date)
+  ) |>
+  mutate(calc_value = numerator / denominator) |>
+  nest(.by = c(CAZ_name)) |>
+  left_join(CAZ_lst |> select(CAZ, Start), by = c("CAZ_name" = "CAZ")) |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        bind_rows(noCAZ_SABA_aggre) |>
+        filter(year >= .y)
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = denominator / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,1))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Prescriptions inhalers per patient",
+          col = "Location Class",
+          x = ""
+        )
+    })
+  )
 ```
 
 
@@ -348,10 +511,129 @@ plots_SABA_denominator <- CAZ_SABA |>
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_denominator$plots){
+for (i in plots_SABA_denominator$plots) {
   print(i)
 }
 ```
+
+### Montelukast prescriptions
+
+Processing data
+
+```{r}
+noCAZ_mtlkst_aggre <- noCAZ_mtlkst |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, month, year, date, bnf)
+  )
+noCAZ_mtlkst_aggre$date <- as.Date(noCAZ_mtlkst_aggre$date)
+CAZ_mtlkst$date <- as.Date(CAZ_mtlkst$date)
+
+noCAZ_mtlkst_nest <- noCAZ_mtlkst_aggre |>
+  nest(.by = bnf, .key = "control_data")
+```
+
+
+
+#### Visualisations
+
+Preparing plots 
+```{r}
+plots_mtlkst <- CAZ_mtlkst |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("row_id" = "code")
+  ) |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, CAZ_name, month, year, date, bnf)
+  ) |>
+  nest(.by = c(CAZ_name, bnf)) |>
+  left_join(
+    CAZ_lst |>
+      select(CAZ, Start),
+    by = c("CAZ_name" = "CAZ")
+  ) |>
+  left_join(noCAZ_mtlkst_nest, by = "bnf") |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        filter(year >= .y)
+    }),
+    trend_data = map2(trend_data, control_data, \(.x, .y) {
+      .x |>
+        bind_rows(
+          .y |>
+            filter(year >= min(.x$year))
+        )
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = items / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,0.7))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Items per patient",
+          col = "Location Class",
+          x = ""
+        )
+    }),
+    plots = map2(plots, bnf, \(.x, .y) {
+      .x + labs(subtitle = paste("BNF code:", .y))
+    })
+  )
+```
+
+```{r}
+#| echo: false
+#| results: asis
+#| message: false
+#| warning: false
+
+bnf_codes <- plots_mtlkst$bnf |> unique()
+
+caz_codes <- plots_mtlkst$CAZ_name |> unique()
+
+# Loop to display title and plot
+for (title in bnf_codes) {
+  cat("#####  BNF code:", title, "\n\n") # Print markdown title
+  for (caz in caz_codes) {
+    cat("######  CAZ:", caz, "\n\n") # Print markdown title
+    print(plots_mtlkst$plots[
+      plots_mtlkst$bnf == title & plots_mtlkst$CAZ_name == caz
+    ]) # Render the plot
+    cat("\n\n") # Space between entries
+  }
+}
+
+```
+
+aa
 
 ### Main BNF codes
 
@@ -361,65 +643,91 @@ This analysis is undertaken for all the main BNF codes, see [this](https://openp
 Calculating trends from all other practices (except London) as a control
 
 ```{r}
-noCAZ_bnf_aggre <- noCAZ_bnf |> 
-  summarise(across(c(NUMBER_OF_PATIENTS,items,quantity),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,month,year,date,bnf)) 
+noCAZ_bnf_aggre <- noCAZ_bnf |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, month, year, date, bnf)
+  )
 noCAZ_bnf_aggre$date <- as.Date(noCAZ_bnf_aggre$date)
 CAZ_bnf$date <- as.Date(CAZ_bnf$date)
 
-noCAZ_bnf_nest <- noCAZ_bnf_aggre |> 
-  nest(.by = bnf,.key = "control_data")
+noCAZ_bnf_nest <- noCAZ_bnf_aggre |>
+  nest(.by = bnf, .key = "control_data")
 
 ```
 
-### Visualisations
+#### Visualisations
 
 ```{r}
-plots_bnf <- CAZ_bnf |> 
-  left_join(CAZ_practices |> st_drop_geometry() |> 
-              select(code,location_class,CAZ_name),by = c("row_id"="code")) |> 
-  
-  summarise(across(c(NUMBER_OF_PATIENTS,items,quantity),\(x) sum(x,na.rm = T)),
-            .by = c(location_class,CAZ_name,month,year,date,bnf)) |>
-  nest(.by = c(CAZ_name,bnf)) |> 
-  left_join(CAZ_lst |>
-              select(CAZ,Start),by = c("CAZ_name"= "CAZ")) |> 
-  left_join(noCAZ_bnf_nest,by = "bnf") |> 
-  mutate(trend_data = map2(data, Start,\(.x,.y){
-                             .x |> 
-                               filter(year>=.y)
-                           }),
-         trend_data = map2(trend_data,control_data,\(.x,.y){
-                             .x |> 
-                               bind_rows(.y |> 
-                               filter(year>=min(.x$year))) 
-                           })) |> 
-  mutate(plots = map2(data,trend_data,
-                      \(.x, .y){
-                        .x |> ggplot(aes(x = date,
-                                         y = items/NUMBER_OF_PATIENTS,
-                                         colour = location_class))+
-                          geom_line(aes(group = location_class),alpha = 0.2,linewidth = 0.2)+
-                          geom_smooth(data = .y,
-                                      method = "lm",
-                                      formula = 'y ~ x',
-                                      se = F,
-                                      aes(linetype = location_class))+
-                          theme_minimal()+
-                          scale_colour_manual(values = c(cols4all::c4a(palette = "set1")[1:4],"gray30"))+
-                          # scale_y_continuous(limits = c(0,0.7))+
-                          scale_linetype_manual(values = c(rep("solid",4),"dashed"))+
-                          guides(linetype = "none")
-  }),
-  plots = map2(plots,CAZ_name,\(.x,.y){
-    .x + labs(title = .y,
-              y = "Items per patient",
-              col = "Location Class",
-              x = "")}
-              ),
-  plots = map2(plots,bnf,\(.x,.y){
-    .x + labs(subtitle = paste("BNF code:",.y))}
-              ))
+plots_bnf <- CAZ_bnf |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("row_id" = "code")
+  ) |>
+
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, CAZ_name, month, year, date, bnf)
+  ) |>
+  nest(.by = c(CAZ_name, bnf)) |>
+  left_join(
+    CAZ_lst |>
+      select(CAZ, Start),
+    by = c("CAZ_name" = "CAZ")
+  ) |>
+  left_join(noCAZ_bnf_nest, by = "bnf") |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        filter(year >= .y)
+    }),
+    trend_data = map2(trend_data, control_data, \(.x, .y) {
+      .x |>
+        bind_rows(
+          .y |>
+            filter(year >= min(.x$year))
+        )
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = items / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,0.7))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Items per patient",
+          col = "Location Class",
+          x = ""
+        )
+    }),
+    plots = map2(plots, bnf, \(.x, .y) {
+      .x + labs(subtitle = paste("BNF code:", .y))
+    })
+  )
 ```
 
 ```{r}
@@ -427,25 +735,21 @@ plots_bnf <- CAZ_bnf |>
 #| results: asis
 #| message: false
 #| warning: false
-  
+
 bnf_codes <- plots_bnf$bnf |> unique()
 
 caz_codes <- plots_bnf$CAZ_name |> unique()
 
 # Loop to display title and plot
 for (title in bnf_codes) {
-  cat("####  BNF code:", title, "\n\n")   # Print markdown title
+  cat("#####  BNF code:", title, "\n\n") # Print markdown title
   for (caz in caz_codes) {
-    cat("#####  CAZ:", caz, "\n\n")   # Print markdown title
-    print(plots_bnf$plots[plots_bnf$bnf == title & plots_bnf$CAZ_name == caz])  # Render the plot
-    cat("\n\n")                # Space between entries
+    cat("######  CAZ:", caz, "\n\n") # Print markdown title
+    print(plots_bnf$plots[plots_bnf$bnf == title & plots_bnf$CAZ_name == caz]) # Render the plot
+    cat("\n\n") # Space between entries
   }
 }
 
 ```
 
 
-
-
-
-This is an example for a citation 

@@ -165,3 +165,31 @@ sf_practices_size |>
   scale_y_sqrt() +
   facet_wrap(CAZ_name ~ .)
 ```
+
+### Variation in size
+
+```{r}
+patient_num_df$month <- match(patient_num_df$month, tolower(month.name))
+
+var_size_pract <- patient_num_df |>
+
+  mutate(
+    ym = paste0(year, sprintf("%02d", month)) |> as.numeric(),
+    ym_date = ymd(paste0(ym, "01"))
+  ) |>
+  mutate(
+    baseline = if_else(ym == min(ym), NUMBER_OF_PATIENTS, NA),
+    .by = ORG_CODE
+  ) |>
+  mutate(
+    baseline = if_else(is.na(baseline), sum(baseline, na.rm = TRUE), baseline),
+    .by = ORG_CODE
+  ) |>
+  mutate(patients_std = (NUMBER_OF_PATIENTS - baseline) / baseline)
+
+
+ggplot(var_size_pract, aes(patients_std)) +
+  stat_ecdf() +
+  theme_minimal()
+
+```

@@ -10,10 +10,10 @@ By examining prescription patterns before and after CAZ implementation, and comp
 
 The analysis incorporates:
 
-- **Temporal trends**: Changes in prescription rates over time
-- **Spatial patterns**: Differences between CAZ and non-CAZ areas
-- **Practice-level analysis**: Variations across individual GP practices
-- **Population adjustments**: Accounting for patient registration numbers
+-   **Temporal trends**: Changes in prescription rates over time
+-   **Spatial patterns**: Differences between CAZ and non-CAZ areas
+-   **Practice-level analysis**: Variations across individual GP practices
+-   **Population adjustments**: Accounting for patient registration numbers
 
 This comprehensive approach helps to identify potential causal relationships between air quality interventions and health outcomes while controlling for confounding factors.
 
@@ -84,7 +84,6 @@ Loading SABA prescription data for respiratory health analysis.
 all_saba_raw <- read_csv(file = file.path(here(), "data_raw", "all_saba.csv"))
 ```
 
-
 Loading comprehensive BNF prescription data for broader medication analysis.
 
 ```{r}
@@ -114,6 +113,7 @@ all_data <- get_all_data(2)
 ```
 
 Loading data for Montelukast
+
 ```{r}
 get_code_data <- function(code) {
   lst_files <- list.files(
@@ -132,7 +132,6 @@ get_code_data <- function(code) {
 
 all_mtlkt_data <- get_code_data(code = "0303020G0")
 ```
-
 
 ## Preparing data
 
@@ -178,7 +177,7 @@ all_other_codes <- all_practices |>
 
 ```
 
-### Subsetting SABA data 
+### Subsetting SABA data
 
 Filtering SABA prescription data for CAZ and control areas with patient population adjustments.
 
@@ -357,7 +356,6 @@ plots_SABA_ratio <- CAZ_SABA |>
   )
 ```
 
-
 ```{r}
 #| message: false
 #| error: false
@@ -430,7 +428,6 @@ plots_SABA_numerator <- CAZ_SABA |>
     })
   )
 ```
-
 
 ```{r}
 #| message: false
@@ -505,7 +502,6 @@ plots_SABA_denominator <- CAZ_SABA |>
   )
 ```
 
-
 ```{r}
 #| message: false
 #| error: false
@@ -533,11 +529,10 @@ noCAZ_mtlkst_nest <- noCAZ_mtlkst_aggre |>
   nest(.by = bnf, .key = "control_data")
 ```
 
-
-
 #### Visualisations
 
-Preparing plots 
+Preparing plots
+
 ```{r}
 plots_mtlkst <- CAZ_mtlkst |>
   left_join(
@@ -638,7 +633,6 @@ aa
 ### Main BNF codes
 
 This analysis is undertaken for all the main BNF codes, see [this](https://openprescribing.net/bnf/)
-
 
 Calculating trends from all other practices (except London) as a control
 
@@ -751,5 +745,3 @@ for (title in bnf_codes) {
 }
 
 ```
-
-

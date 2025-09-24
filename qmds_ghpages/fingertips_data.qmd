@@ -84,16 +84,18 @@ indicator_lst_resp |>
 
 ### Indicator Selection
 
-Creating a focused list of respiratory indicator IDs for subsequent analysis.
+Creating an object for the Hospital Admissions indicator.
 
 ```{r}
-sel_indicator <- indicator_lst_resp |>
-  pull(IndicatorID)
+# sel_indicator <- indicator_lst_resp |>
+#   pull(IndicatorID)
+
+sel_indicator <- 90810
 ```
 
 ### Area Type Mapping
 
-Determining which geographic area types are available for each respiratory health indicator.
+Determining which geographic area types are available for the selected health indicator.
 
 ```{r}
 area_avail_ind <- do.call(
@@ -136,86 +138,19 @@ slice_sample(area_avail_ind_names, n = 15) |>
 
 ### Sample Data Extraction
 
-Downloading actual health data for the first available respiratory indicator.
+Downloading actual data for the indicator Lower and Upper tier LAs.
 
 ```{r}
 temp_data <- fingertips_data(
   IndicatorID = area_avail_ind$IndicatorID[1],
-  AreaTypeID = area_avail_ind$AreaTypeID[1]
+  AreaTypeID = "All"
 )
 
+temp_data |> sample_n(10) |> knitr::kable()
+
 ```
 
-### Data Preparation
-
-Preparing sample data for visualisation by selecting the most common area type and random sample areas.
-
 ```{r}
-cols <- c("IndicatorID", "AreaCode", "ParentName", "Sex", "Timeperiod", "Value")
-
-area_type_name <- table(temp_data$AreaType) # tally each group in the AreaType field
-
-area_type_name <- area_type_name[area_type_name == max(area_type_name)] # pick the group with the highest frequency
-area_type_name <- names(area_type_name) # retrieve the name
-
-set.seed(1234)
-samp_areas <- sample(temp_data$AreaCode |> unique(), 5)
-
-
-data <- temp_data[
-  temp_data$AreaType == area_type_name & temp_data$AreaCode %in% samp_areas,
-  cols
-]
-```
-
-
-We are going to show the historic data for five areas of type `r area_type_name`
-
-```{r}
-ggplot(data, aes(x = Timeperiod, y = Value, col = AreaCode, group = AreaCode)) +
-  geom_line() +
-  labs(
-    title = area_avail_ind_names$IndicatorName[1],
-    subtitle = paste0("Showning a sample of ", area_type_name)
-  ) +
-  theme(axis.text.x = element_text(angle = 90))
-```
-
-## Comprehensive Indicator Analysis
-
-### Combined Dataset Creation
-
-Merging respiratory and asthma indicators to create a comprehensive dataset for analysis.
-
-```{r}
-indicator_lst_all <- bind_rows(indicator_lst_resp, indicator_lst_asthma)
-
-sel_indicator_all <- indicator_lst_all |> pull(IndicatorID) |> unique()
-```
-
-### Local Authority Data Filtering
-
-Extracting indicators available at local authority and practice levels for geographic analysis.
-
-```{r}
-area_avail_ind_all <- do.call(
-  bind_rows,
-  lapply(sel_indicator_all, \(x) indicator_areatypes(IndicatorID = x))
-)
-
-LA_ind_names_all <- area_avail_ind_all |>
-  left_join(
-    indicator_lst_all |>
-      select(IndicatorID, IndicatorName) |>
-      unique(),
-    by = join_by(IndicatorID)
-  ) |>
-  left_join(
-    area_ty_lst |>
-      select(AreaTypeID, AreaTypeName) |>
-      unique(),
-    by = join_by(AreaTypeID)
-  ) |>
-  filter(str_detect(AreaTypeName, pattern = "(Upper|Lower|Practice|Sub-ICB)"))
+write_csv(temp_data, "data_raw/hospital_admissions.csv", append = F)
 ```
 

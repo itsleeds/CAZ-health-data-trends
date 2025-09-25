@@ -32,8 +32,8 @@ website:
             text: Practice characteristics by CAZ boundaries
           - href: qmds_ghpages/CAZ_prescription_trends.qmd
             text: Trends by practice location
-          - href: qmds_ghpages/fingertips_analysis.qmd 
-            text: Under 19-yrs hospital admissions for asthma
+          - href: qmds_ghpages/fingertips_trends.qmd
+            text: Under 19 yrs hospital admissions for asthma
       - qmds_ghpages/about.qmd
 
 format:

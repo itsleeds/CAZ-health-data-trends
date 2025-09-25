@@ -628,8 +628,8 @@ for (title in bnf_codes) {
 
 ```
 
-aa
-
+ a
+ 
 ### Main BNF codes
 
 This analysis is undertaken for all the main BNF codes, see [this](https://openprescribing.net/bnf/)
@@ -651,6 +651,8 @@ noCAZ_bnf_nest <- noCAZ_bnf_aggre |>
 ```
 
 #### Visualisations
+
+##### Trends
 
 ```{r}
 plots_bnf <- CAZ_bnf |>
@@ -736,12 +738,19 @@ caz_codes <- plots_bnf$CAZ_name |> unique()
 
 # Loop to display title and plot
 for (title in bnf_codes) {
-  cat("#####  BNF code:", title, "\n\n") # Print markdown title
+  cat("######  BNF code:", title, "\n\n") # Print markdown title
   for (caz in caz_codes) {
-    cat("######  CAZ:", caz, "\n\n") # Print markdown title
+    cat("#######  CAZ:", caz, "\n\n") # Print markdown title
     print(plots_bnf$plots[plots_bnf$bnf == title & plots_bnf$CAZ_name == caz]) # Render the plot
     cat("\n\n") # Space between entries
   }
 }
+
+```
+
+##### High-level correlation analysis
+
+
+```{r}
 
 ```

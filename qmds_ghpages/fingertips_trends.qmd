@@ -1,9 +1,9 @@
 ---
 title: "Analysis of Fingertips data"
+format: html
 ---
 
 This file presents an analysis of hospital admissions data for districts with Clean Air Zones (CAZ) in England. The aim is to explore health trends, focusing on hospital admissions of under-19-year-olds, and to visualise geographical and temporal patterns using publicly available datasets.
-
 
 ## Setup
 
@@ -25,7 +25,9 @@ pkgs <- c(
   "here",
   "tmap",
   "data.table",
-  "plotly"
+  "plotly",
+  "knitr",
+  "kableExtra"
 )
 
 remotes::install_cran(pkgs)
@@ -144,11 +146,56 @@ CAZ_admissions <- admissions_data |>
 We plot hospital admissions for under-19-year-olds across CAZ districts, grouped by age and area. The interactive plot allows exploration of temporal trends and comparisons between districts, supporting further investigation into the impact of CAZ interventions on health outcomes.
 
 ```{r}
+london_codes <- c(
+  "E09000006",
+  "E09000023",
+  "E09000022",
+  "E09000008",
+  "E09000011",
+  "E09000016",
+  "E09000007",
+  "E09000029",
+  "E09000024",
+  "E09000004",
+  "E09000030",
+  "E09000001",
+  "E09000012",
+  "E09000031",
+  "E09000026",
+  "E09000025",
+  "E09000010",
+  "E09000019",
+  "E09000033",
+  "E09000003",
+  "E09000005",
+  "E09000009",
+  "E09000015",
+  "E09000017",
+  "E09000002",
+  "E09000021",
+  "E09000027"
+)
+
+
+admissions_control <- admissions_data |>
+  filter(
+    !(AreaCode %in% CAZ_la_boundaries$LAD25CD),
+    !((AreaCode %in% london_codes))
+  ) |>
+  filter(Sex == "Persons") |>
+  summarise(
+    across(c(Count, Denominator), \(x) sum(x, na.rm = T)),
+    .by = c(TimeperiodSortable, Age)
+  ) |>
+  mutate(Value = (1e5 * Count) / Denominator, AreaName = "Control")
+
+
 admissions_plot <- CAZ_admissions |>
   filter(Sex == "Persons") |>
   ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +
-  scale_x_continuous(breaks = unique(CAZ_admissions$TimeperiodSortable)) +
+  geom_line(data = admissions_control, col = "black", linetype = "dashed") +
   geom_line() +
+  scale_x_continuous(breaks = unique(CAZ_admissions$TimeperiodSortable)) +
   facet_grid(Age ~ ., scales = "free_y") +
   theme_light() +
   scale_color_discrete(type = "qual", palette = "Dark2") +
@@ -160,4 +207,13 @@ admissions_plot <- CAZ_admissions |>
   )
 
 ggplotly(admissions_plot)
+```
+
+
+```{r}
+CAZ_admissions |>
+  filter(Sex == "Persons") |>
+  knitr::kable(format = "html") |>
+  kable_paper() |>
+  scroll_box(width = "100%", height = "5%")
 ```

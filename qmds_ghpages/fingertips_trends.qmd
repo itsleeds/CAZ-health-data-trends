@@ -136,7 +136,10 @@ The admissions data is filtered to include only records from districts with CAZ 
 
 ```{r}
 CAZ_admissions <- admissions_data |>
-  filter(AreaCode %in% CAZ_la_boundaries$LAD25CD)
+  filter(
+    AreaCode %in% c(CAZ_la_boundaries$LAD25CD, "E08000019"),
+    AreaCode != "E08000037"
+  )
 ```
 
 ## Visualising Trends

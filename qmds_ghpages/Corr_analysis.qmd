@@ -1,0 +1,63 @@
+---
+title: "Correlation Analysis for Prescriptions"
+format: html
+---
+
+## Setup
+
+```{r}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+pkgs = c(
+  "sf",
+  "tidyverse",
+  "here",
+  "tmap",
+  "data.table",
+  "corrplot"
+)
+
+remotes::install_cran(pkgs)
+sapply(pkgs, require, character.only = TRUE)
+
+```
+
+
+## Global correlation analysis
+
+### Loading data
+
+```{r}
+load(file = "data_raw/trends_data.rda")
+```
+
+Preparing the data for correlation calculation
+
+```{r}
+corr_data <- CAZ_bnf |>
+  drop_na(items, NUMBER_OF_PATIENTS) |>
+  mutate(
+    indicator = items / NUMBER_OF_PATIENTS
+  ) |>
+  select(row_id, date, bnf, indicator) |>
+  pivot_wider(names_from = bnf, values_from = indicator) |>
+  select(-row_id, -date)
+
+```
+
+
+```{r}
+#| fig-format: png
+#| fig-dpi: 300
+#| fig-scale: 0.3
+#| lightbox: true
+
+M = cor(corr_data, use = "pairwise.complete.obs")
+
+corrplot.mixed(M)
+```

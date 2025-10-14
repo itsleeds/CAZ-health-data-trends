@@ -26,6 +26,8 @@ website:
             text: Prescriptions
           - href: qmds_ghpages/fingertips_data.qmd
             text: Health indicators
+          - href: qmds_ghpages/rural_urban_class.qmd
+            text: Urban / Rural classification data
       - section: Analysis
         contents:
           - href: qmds_ghpages/CAZ_practice_age_analysis.qmd

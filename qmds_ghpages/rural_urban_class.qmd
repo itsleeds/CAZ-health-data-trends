@@ -1,0 +1,198 @@
+---
+title: "Urban/Rural Classification and Major Towns and Cities"
+format: html
+---
+
+## Overview
+
+This section explores the spatial classification of areas as urban or rural, with a particular focus on identifying major towns and cities. By integrating census-based rural-urban classifications with boundaries for built-up areas, we refine the definition of "urban" to better reflect proximity to major population centres. This enhanced classification supports more accurate analysis of health and prescription trends in relation to urbanisation.
+
+## Setup
+
+Required R packages for spatial analysis and data manipulation are installed and loaded.
+
+```{r}
+#| label: packages
+#| message: false
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+pkgs = c(
+  "sf",
+  "tidyverse",
+  "here",
+  "tmap",
+  "geojsonsf",
+  "rvest"
+)
+
+remotes::install_cran(pkgs)
+sapply(pkgs, require, character.only = TRUE)
+```
+
+## Data Acquisition
+
+### Major Towns and Cities Boundaries
+
+Boundaries for major towns and cities are sourced from the ONS Built-up Areas dataset. If not already available locally, the data is downloaded and saved for future use.
+
+```{r}
+
+if (!file.exists("data_raw/towns_boundaries.gpkg")) {
+  u <- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Major_Towns_and_Cities_Dec_2015_Boundaries_V2_2022/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+  towns_boundaries <- geojsonsf::geojson_sf(u) |>
+    st_transform(27700)
+
+  st_write(
+    towns_boundaries,
+    dsn = file.path(here(), "data_raw", "towns_boundaries.gpkg"),
+    append = FALSE
+  )
+} else {
+  towns_boundaries <- st_read(file.path(
+    here(),
+    "data_raw",
+    "towns_boundaries.gpkg"
+  ))
+}
+
+```
+
+### Census Data: OA Boundaries and Rural-Urban Classification
+
+Output Area (OA) boundaries and the 2021 Rural-Urban classification are obtained from the ONS geoportal. These datasets are joined to assign each OA a rural or urban label.
+
+```{r}
+u1 <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/Output_Areas_2021_EW_BGC_V2_-5587136561181621407.gpkg"
+
+oa_boundaries_only <- st_read(u1)
+
+u2 <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/Rural_Urban_Classification_.2021._of_Output_Areas_in_EW.csv"
+
+oa_classification <- read_csv(
+  u2,
+  col_types = cols(
+    OA21CD = col_character(),
+    RUC21CD = col_character(),
+    RUC21NM = col_character(),
+    Urban_rural_flag = col_character(),
+    ObjectId = col_double()
+  )
+)
+
+
+oa_boundaries <- oa_boundaries_only |>
+  left_join(oa_classification, by = join_by(OA21CD))
+
+```
+
+## Data Exploration
+
+We visualise the rural-urban classification from the 2021 census, overlaying the locations of major towns and cities to highlight spatial patterns.
+
+```{r}
+tmap_mode("plot")
+tm_shape(oa_boundaries) +
+  tm_fill("RUC21NM") +
+  tm_shape(towns_boundaries) +
+  tm_borders("grey80")
+```
+
+
+## Spatial Analysis
+
+To refine the urban classification, we identify OAs that fall within major towns or cities. These areas are reclassified as "Urban: within major town or city" to distinguish them from other urban or rural locations.
+
+```{r}
+id_town <- st_within(oa_boundaries, towns_boundaries)
+
+oa_boundaries$id_town <- vapply(
+  id_town,
+  \(x) {
+    if (length(x) == 1) {
+      x
+    } else {
+      NA_integer_
+    }
+  },
+  numeric(1)
+)
+
+```
+
+## Results
+
+A new variable, `RUC21NM_adj`, is created to reflect the adjusted urban/rural classification. The results are visualised and saved for further analysis.
+
+```{r}
+oa_boundaries$RUC21NM_adj <- oa_boundaries$RUC21NM
+oa_boundaries$RUC21NM_adj[
+  !is.na(oa_boundaries$id_town)
+] <- "Urban: within major town or city"
+```
+
+Visualising the results
+
+```{r}
+#| label: final-class-map
+tm_shape(oa_boundaries) +
+  tm_fill("RUC21NM_adj") +
+  tm_shape(towns_boundaries) +
+  tm_borders()
+```
+
+Saving results for OA classification
+
+```{r}
+st_write(
+  oa_boundaries,
+  file.path("data_raw", "oa_classified.gpkg"),
+  append = FALSE
+)
+```
+
+## Practice Location Classification
+
+GP practice locations are loaded and spatially joined to the OA boundaries. Each practice is assigned the adjusted urban/rural classification based on its location.
+
+```{r}
+pract_CAZclassed <- st_read("data_raw/CAZ_practices.gpkg")
+```
+
+Extracting the indexes of the OA where the practices are:
+```{r}
+pract_location_oa <- st_within(
+  pract_CAZclassed,
+  oa_boundaries
+) |>
+  unlist()
+
+## A simple check
+# identical(nrow(pract_CAZclassed),length(pract_location_oa))
+
+```
+
+Bringing the urban classification using the indexes
+
+```{r}
+pract_CAZclassed$RUC21NM_adj <- oa_boundaries$RUC21NM_adj[pract_location_oa]
+```
+
+The results are visualised and saved for use in further health data analysis.
+
+```{r}
+tmap_mode("view")
+tm_shape(pract_CAZclassed) +
+  tm_dots("RUC21NM_adj")
+```
+
+Saving the results
+```{r}
+st_write(
+  pract_CAZclassed,
+  "data_raw/CAZ_practices_urban_rural.gpkg",
+  append = FALSE
+)
+```

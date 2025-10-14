@@ -36,8 +36,7 @@ pkgs = c(
   "tidyverse",
   "here",
   "tmap",
-  "data.table",
-  "corrplot"
+  "data.table"
 )
 
 remotes::install_cran(pkgs)
@@ -285,6 +284,19 @@ noCAZ_mtlkst <- all_mtlkt_data[
       ordered = T
     )
   )
+```
+
+### Saving outputs for other analyses
+
+```{r}
+save(
+  CAZ_bnf,
+  noCAZ_bnf,
+  CAZ_mtlkst,
+  noCAZ_mtlkst,
+  CAZ_practices,
+  file = "data_raw/trends_data.rda"
+)
 ```
 
 ## Extracting trends
@@ -747,32 +759,4 @@ for (title in bnf_codes) {
   }
 }
 
-```
-
-##### High-level correlation analysis
-
-Preparing the data for correlation calculation
-
-```{r}
-corr_data <- CAZ_bnf |>
-  drop_na(items, NUMBER_OF_PATIENTS) |>
-  mutate(
-    indicator = items / NUMBER_OF_PATIENTS
-  ) |>
-  select(row_id, date, bnf, indicator) |>
-  pivot_wider(names_from = bnf, values_from = indicator) |>
-  select(-row_id, -date)
-
-```
-
-
-```{r}
-#| fig-format: png
-#| fig-dpi: 300
-#| lightbox: true
-#| out-width: "25cm"
-#| out-height: "20cm"
-
-M = cor(corr_data, use = "pairwise.complete.obs")
-corrplot.mixed(M)
 ```

@@ -23,16 +23,14 @@ pkgs = c(
   "sf",
   "tidyverse",
   "here",
-  "tmap",
-  "geojsonsf",
-  "rvest"
+  "tmap"
 )
 
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 ```
 
-## Data Acquisition
+## Data
 
 ### Major Towns and Cities Boundaries
 
@@ -42,7 +40,7 @@ Boundaries for major towns and cities are sourced from the ONS Built-up Areas da
 
 if (!file.exists("data_raw/towns_boundaries.gpkg")) {
   u <- "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Major_Towns_and_Cities_Dec_2015_Boundaries_V2_2022/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
-  towns_boundaries <- geojsonsf::geojson_sf(u) |>
+  towns_boundaries <- st_read(u, quiet = TRUE) |>
     st_transform(27700)
 
   st_write(
@@ -51,11 +49,14 @@ if (!file.exists("data_raw/towns_boundaries.gpkg")) {
     append = FALSE
   )
 } else {
-  towns_boundaries <- st_read(file.path(
-    here(),
-    "data_raw",
-    "towns_boundaries.gpkg"
-  ))
+  towns_boundaries <- st_read(
+    file.path(
+      here(),
+      "data_raw",
+      "towns_boundaries.gpkg"
+    ),
+    quiet = TRUE
+  )
 }
 
 ```
@@ -67,7 +68,7 @@ Output Area (OA) boundaries and the 2021 Rural-Urban classification are obtained
 ```{r}
 u1 <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/Output_Areas_2021_EW_BGC_V2_-5587136561181621407.gpkg"
 
-oa_boundaries_only <- st_read(u1)
+oa_boundaries_only <- st_read(u1, quiet = TRUE)
 
 u2 <- "https://github.com/itsleeds/CAZ-health-data-trends/releases/download/v0/Rural_Urban_Classification_.2021._of_Output_Areas_in_EW.csv"
 
@@ -79,7 +80,7 @@ oa_classification <- read_csv(
     RUC21NM = col_character(),
     Urban_rural_flag = col_character(),
     ObjectId = col_double()
-  )
+  ),
 )
 
 
@@ -148,8 +149,9 @@ Saving results for OA classification
 ```{r}
 st_write(
   oa_boundaries,
-  file.path("data_raw", "oa_classified.gpkg"),
-  append = FALSE
+  file.path(here(), "data_raw", "oa_classified.gpkg"),
+  append = FALSE,
+  quiet = TRUE
 )
 ```
 
@@ -158,7 +160,10 @@ st_write(
 GP practice locations are loaded and spatially joined to the OA boundaries. Each practice is assigned the adjusted urban/rural classification based on its location.
 
 ```{r}
-pract_CAZclassed <- st_read("data_raw/CAZ_practices.gpkg")
+pract_CAZclassed <- st_read(
+  file.path(here(), "data_raw", "CAZ_practices.gpkg"),
+  quiet = TRUE
+)
 ```
 
 Extracting the indexes of the OA where the practices are:
@@ -192,7 +197,8 @@ Saving the results
 ```{r}
 st_write(
   pract_CAZclassed,
-  "data_raw/CAZ_practices_urban_rural.gpkg",
-  append = FALSE
+  file.path(here(), "data_raw", "CAZ_practices_urban_rural.gpkg"),
+  append = FALSE,
+  quiet = TRUE
 )
 ```

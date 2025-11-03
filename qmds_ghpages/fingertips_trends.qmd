@@ -83,7 +83,10 @@ admissions_data <- read_csv(
 Spatial boundaries for Clean Air Zones are loaded from a GeoPackage file. These boundaries define the areas where interventions to improve air quality have been implemented.
 
 ```{r}
-caz_boundaries <- st_read(file.path(here(), "data_raw", "CAZ_boundaries.gpkg"), quiet = TRUE)
+caz_boundaries <- st_read(
+  file.path(here(), "data_raw", "CAZ_boundaries.gpkg"),
+  quiet = TRUE
+)
 ```
 
 #### Local Authority District Boundaries
@@ -192,7 +195,11 @@ admissions_control <- admissions_data |>
   ) |>
   mutate(Value = (1e5 * Count) / Denominator, AreaName = "Control")
 
+save(CAZ_admissions, admissions_control, file = "./data_raw/admisions_data.rda")
+```
 
+
+```{r}
 admissions_plot <- CAZ_admissions |>
   filter(Sex == "Persons") |>
   ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +

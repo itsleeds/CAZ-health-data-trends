@@ -66,7 +66,7 @@ if (!file.exists("data_raw/subicb_boundaries.gpkg")) {
     here(),
     "data_raw",
     "subicb_boundaries.gpkg"
-  ))
+  ), quiet = TRUE)
 }
 ```
 
@@ -96,7 +96,7 @@ if (!file.exists("data_raw/gp_locations.gpkg")) {
     append = FALSE
   )
 } else {
-  all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"))
+  all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"), quiet = TRUE)
 }
 ```
 
@@ -108,7 +108,7 @@ Loading previously created CAZ buffer zones for spatial analysis.
 ```{r}
 #| label: load-caz-buffers
 
-caz_buffers <- st_read(file.path(here(), "data_raw", "CAZ_buffers.gpkg"))
+caz_buffers <- st_read(file.path(here(), "data_raw", "CAZ_buffers.gpkg"), quiet = TRUE)
 ```
 
 Identifying GP practices located within CAZ buffer zones.

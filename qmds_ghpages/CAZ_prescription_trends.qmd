@@ -52,13 +52,19 @@ Loading spatial and administrative data for GP practices and CAZ areas.
 
 ```{r}
 #| label: read-data-pract
-subicb_boundaries <- st_read(file.path(
-  here(),
-  "data_raw",
-  "subicb_boundaries.gpkg"
-))
-pract_classed <- st_read("data_raw/CAZ_practices.gpkg")
-all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"))
+subicb_boundaries <- st_read(
+  file.path(
+    here(),
+    "data_raw",
+    "subicb_boundaries.gpkg"
+  ),
+  quiet = TRUE
+)
+pract_classed <- st_read("data_raw/CAZ_practices.gpkg", quiet = TRUE)
+all_practices <- st_read(
+  file.path(here(), "data_raw", "all_practices_urban_rural.gpkg"),
+  quiet = TRUE
+)
 CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
 ```
 
@@ -168,13 +174,32 @@ all_valid_subicb_codes <- subicb_boundaries |>
   filter(str_detect(name, "LONDON", negate = TRUE)) |>
   pull(code)
 
+London_subicb_geom_filter <- subicb_boundaries |>
+  filter(str_detect(name, "LONDON")) |>
+  st_union() |>
+  st_buffer(20e3)
+
 
 all_other_codes <- all_practices |>
   st_drop_geometry() |>
-  filter(!(par_code %in% all_valid_subicb_codes)) |>
+  filter(
+    par_code %in% all_valid_subicb_codes,
+    RUC21NM_adj %in%
+      c(
+        "Urban: within major town or city"
+      ),
+    !code %in% CAZ_practices$code
+  ) |>
   pull(code)
 
+```
 
+A visualisation of the practices that will be included in the control
+
+```{r}
+all_practices |>
+  filter(code %in% all_other_codes) |>
+  qtm(fill = "RUC21NM_adj")
 ```
 
 ### Subsetting SABA data
@@ -289,6 +314,7 @@ noCAZ_mtlkst <- all_mtlkt_data[
 ### Saving outputs for other analyses
 
 ```{r}
+#| eval: false
 save(
   CAZ_bnf,
   noCAZ_bnf,

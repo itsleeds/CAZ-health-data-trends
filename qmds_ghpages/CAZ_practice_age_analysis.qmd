@@ -45,9 +45,9 @@ subicb_boundaries <- st_read(file.path(
   here(),
   "data_raw",
   "subicb_boundaries.gpkg"
-))
-pract_classed <- st_read("data_raw/CAZ_practices.gpkg")
-all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"))
+), quiet = TRUE)
+pract_classed <- st_read("data_raw/CAZ_practices.gpkg", quiet = TRUE)
+all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"), quiet = TRUE)
 CAZ_lst <- read_csv("data_raw/CAZ_list.csv")
 ```
 

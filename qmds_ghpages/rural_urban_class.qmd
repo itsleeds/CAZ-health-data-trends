@@ -19,7 +19,7 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!require("remotes")) {
   install.packages("remotes")
 }
-pkgs = c(
+pkgs <- c(
   "sf",
   "tidyverse",
   "here",
@@ -46,7 +46,8 @@ if (!file.exists("data_raw/towns_boundaries.gpkg")) {
   st_write(
     towns_boundaries,
     dsn = file.path(here(), "data_raw", "towns_boundaries.gpkg"),
-    append = FALSE
+    append = FALSE,
+    quiet = TRUE
   )
 } else {
   towns_boundaries <- st_read(
@@ -164,6 +165,11 @@ pract_CAZclassed <- st_read(
   file.path(here(), "data_raw", "CAZ_practices.gpkg"),
   quiet = TRUE
 )
+
+all_practices <- st_read(
+  file.path(here(), "data_raw", "gp_locations.gpkg"),
+  quiet = TRUE
+)
 ```
 
 Extracting the indexes of the OA where the practices are:
@@ -174,6 +180,17 @@ pract_location_oa <- st_within(
 ) |>
   unlist()
 
+all_pract_location_oa <- st_within(
+  all_practices,
+  oa_boundaries
+)
+
+all_practices <- all_practices[
+  vapply(all_pract_location_oa, length, numeric(1)) == 1,
+]
+
+all_pract_location_oa_indexes <- all_pract_location_oa |> unlist()
+
 ## A simple check
 # identical(nrow(pract_CAZclassed),length(pract_location_oa))
 
@@ -183,13 +200,24 @@ Bringing the urban classification using the indexes
 
 ```{r}
 pract_CAZclassed$RUC21NM_adj <- oa_boundaries$RUC21NM_adj[pract_location_oa]
+all_practices$RUC21NM_adj <- oa_boundaries$RUC21NM_adj[
+  all_pract_location_oa_indexes
+]
 ```
 
-The results are visualised and saved for use in further health data analysis.
+The results are visualised and saved for use in further health data analysis. These are the CAZ practices
 
 ```{r}
 tmap_mode("view")
 tm_shape(pract_CAZclassed) +
+  tm_dots("RUC21NM_adj")
+```
+
+All other practices
+
+```{r}
+tmap_mode("plot")
+tm_shape(all_practices) +
   tm_dots("RUC21NM_adj")
 ```
 
@@ -198,6 +226,13 @@ Saving the results
 st_write(
   pract_CAZclassed,
   file.path(here(), "data_raw", "CAZ_practices_urban_rural.gpkg"),
+  append = FALSE,
+  quiet = TRUE
+)
+
+st_write(
+  all_practices,
+  file.path(here(), "data_raw", "all_practices_urban_rural.gpkg"),
   append = FALSE,
   quiet = TRUE
 )

@@ -71,7 +71,7 @@ Loading CAZ spatial boundaries and metadata into R for analysis.
 ```{r}
 #| label: load-boundaries-n-metadata
 
-caz_boundaries <- st_read(file.path(here(),"data_raw","CAZ_boundaries.gpkg"))
+caz_boundaries <- st_read(file.path(here(),"data_raw","CAZ_boundaries.gpkg"), quiet = TRUE)
 caz_metadata <- read_csv(file.path(here(),"data_raw","CAZ_list.csv"))
 ```
 
@@ -96,7 +96,7 @@ Saving buffer zones to file for use in subsequent analyses.
 ```{r}
 #| label: save-buffers
 
-st_write(caz_buffers,file.path(here(),"data_raw","CAZ_buffers.gpkg"),append = FALSE)
+st_write(caz_buffers,file.path(here(),"data_raw","CAZ_buffers.gpkg"),append = FALSE, quiet = TRUE)
 ```
 
 A quick visualisation

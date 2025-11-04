@@ -1,10 +1,12 @@
 ---
-title: "CAZ Results: Sheffield"
+title: "CAZ Results"
+params:
+  current_caz: "Sheffield"
 ---
 
 ## Overview
 
-This page presents comprehensive analysis for the **Sheffield** Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.
+This page presents comprehensive analysis for the **`{r} params$current_caz`** Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.
 
 ---
 
@@ -12,39 +14,7 @@ This page presents comprehensive analysis for the **Sheffield** Clean Air Zone, 
 
 ### Introduction
 
-This section analyzes prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.
-
-### Setup and Data Loading
-
-```{r}
-#| label: setup-prescriptions
-#| message: false
-
-options(repos = c(CRAN = "https://cloud.r-project.org"))
-if (!require("remotes")) {
-  install.packages("remotes")
-}
-pkgs = c(
-  "sf",
-  "tidyverse",
-  "here",
-  "tmap",
-  "data.table",
-  "cols4all",
-  "plotly",
-  "knitr",
-  "kableExtra"
-)
-
-remotes::install_cran(pkgs)
-sapply(pkgs, require, character.only = TRUE)
-
-# Load pre-processed trend data
-load(file = "data_raw/trends_data.rda")
-
-# Filter for this specific CAZ
-current_caz <- "Sheffield"
-```
+This section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.
 
 ### SABA Analysis
 
@@ -52,332 +22,56 @@ current_caz <- "Sheffield"
 
 Comparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.
 
-```{r}
-#| label: plot-saba-ratio
-#| message: false
-#| warning: false
-
-saba_ratio_plot <- CAZ_SABA |>
-  left_join(
-    CAZ_practices |>
-      st_drop_geometry() |>
-      select(code, location_class, CAZ_name),
-    by = c("org_id" = "code")
-  ) |>
-  filter(CAZ_name == current_caz) |>
-  summarise(
-    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
-      sum(x, na.rm = T)
-    }),
-    .by = c(location_class, month, year, date)
-  ) |>
-  mutate(calc_value = numerator / denominator) |>
-  ggplot(aes(x = date, y = calc_value, colour = location_class)) +
-  geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
-  geom_smooth(
-    method = "lm",
-    formula = 'y ~ x',
-    se = FALSE,
-    aes(linetype = location_class)
-  ) +
-  theme_minimal() +
-  scale_colour_manual(
-    values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
-  ) +
-  scale_y_continuous(limits = c(0, 0.7)) +
-  scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
-  guides(linetype = "none") +
-  labs(
-    title = paste("SABA Ratio -", current_caz),
-    y = "SABA ratio",
-    col = "Location Class",
-    x = "Date"
-  )
-
-print(saba_ratio_plot)
-```
+![SABA Ratio Trend](../figures/trend_`{r} params$current_caz`_SABA_ratio.png)
 
 #### SABA Numerator (per patient)
 
 Prescription rates of SABA inhalers per registered patient.
 
-```{r}
-#| label: plot-saba-numerator
-#| message: false
-#| warning: false
-
-saba_numerator_plot <- CAZ_SABA |>
-  left_join(
-    CAZ_practices |>
-      st_drop_geometry() |>
-      select(code, location_class, CAZ_name),
-    by = c("org_id" = "code")
-  ) |>
-  filter(CAZ_name == current_caz) |>
-  summarise(
-    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
-      sum(x, na.rm = T)
-    }),
-    .by = c(location_class, month, year, date)
-  ) |>
-  ggplot(aes(
-    x = date,
-    y = numerator / NUMBER_OF_PATIENTS,
-    colour = location_class
-  )) +
-  geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
-  geom_smooth(
-    method = "lm",
-    formula = 'y ~ x',
-    se = FALSE,
-    aes(linetype = location_class)
-  ) +
-  theme_minimal() +
-  scale_colour_manual(
-    values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
-  ) +
-  scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
-  guides(linetype = "none") +
-  labs(
-    title = paste("SABA Prescriptions per Patient -", current_caz),
-    y = "Prescriptions of SABA inhalers per patient",
-    col = "Location Class",
-    x = "Date"
-  )
-
-print(saba_numerator_plot)
-```
+![SABA Numerator Trend](../figures/trend_`{r} params$current_caz`_SABA_numerator.png)
 
 #### SABA Denominator (all inhalers per patient)
 
 Overall inhaler prescription rates as a baseline metric.
 
-```{r}
-#| label: plot-saba-denominator
-#| message: false
-#| warning: false
-
-saba_denominator_plot <- CAZ_SABA |>
-  left_join(
-    CAZ_practices |>
-      st_drop_geometry() |>
-      select(code, location_class, CAZ_name),
-    by = c("org_id" = "code")
-  ) |>
-  filter(CAZ_name == current_caz) |>
-  summarise(
-    across(c(NUMBER_OF_PATIENTS, numerator, denominator), \(x) {
-      sum(x, na.rm = T)
-    }),
-    .by = c(location_class, month, year, date)
-  ) |>
-  ggplot(aes(
-    x = date,
-    y = denominator / NUMBER_OF_PATIENTS,
-    colour = location_class
-  )) +
-  geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
-  geom_smooth(
-    method = "lm",
-    formula = 'y ~ x',
-    se = FALSE,
-    aes(linetype = location_class)
-  ) +
-  theme_minimal() +
-  scale_colour_manual(
-    values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
-  ) +
-  scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
-  guides(linetype = "none") +
-  labs(
-    title = paste("All Inhalers per Patient -", current_caz),
-    y = "Prescriptions of inhalers per patient",
-    col = "Location Class",
-    x = "Date"
-  )
-
-print(saba_denominator_plot)
-```
+![SABA Denominator Trend](../figures/trend_`{r} params$current_caz`_SABA_denominator.png)
 
 ### Montelukast Analysis
 
 Prescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.
 
-```{r}
-#| label: plot-montelukast
-#| message: false
-#| warning: false
-
-mtlkst_plot <- CAZ_mtlkst |>
-  left_join(
-    CAZ_practices |>
-      st_drop_geometry() |>
-      select(code, location_class, CAZ_name),
-    by = c("row_id" = "code")
-  ) |>
-  filter(CAZ_name == current_caz) |>
-  summarise(
-    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
-    .by = c(location_class, month, year, date, bnf)
-  ) |>
-  ggplot(aes(
-    x = date,
-    y = items / NUMBER_OF_PATIENTS,
-    colour = location_class
-  )) +
-  geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
-  geom_smooth(
-    method = "lm",
-    formula = 'y ~ x',
-    se = FALSE,
-    aes(linetype = location_class)
-  ) +
-  theme_minimal() +
-  scale_colour_manual(
-    values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
-  ) +
-  scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
-  guides(linetype = "none") +
-  labs(
-    title = paste("Montelukast Items per Patient -", current_caz),
-    y = "Items per patient",
-    col = "Location Class",
-    x = "Date"
-  )
-
-print(mtlkst_plot)
-```
+![Montelukast Trend](../figures/trend_`{r} params$current_caz`_0303020G0.png)
 
 ### Main BNF Codes Analysis
 
 Prescription trends across all main BNF medication categories.
 
 ```{r}
-#| label: plot-bnf
-#| message: false
-#| warning: false
+#| label: insert-main-bnf-figures
+#| results: asis
 
-bnf_plots <- CAZ_bnf |>
-  left_join(
-    CAZ_practices |>
-      st_drop_geometry() |>
-      select(code, location_class, CAZ_name),
-    by = c("row_id" = "code")
-  ) |>
-  filter(CAZ_name == current_caz) |>
-  summarise(
-    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
-    .by = c(location_class, month, year, date, bnf)
-  ) |>
-  nest(.by = c(bnf)) |>
-  mutate(
-    plots = map(data, \(.x) {
-      .x |>
-        ggplot(aes(
-          x = date,
-          y = items / NUMBER_OF_PATIENTS,
-          colour = location_class
-        )) +
-        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
-        geom_smooth(
-          method = "lm",
-          formula = 'y ~ x',
-          se = FALSE,
-          aes(linetype = location_class)
-        ) +
-        theme_minimal() +
-        scale_colour_manual(
-          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
-        ) +
-        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
-        guides(linetype = "none") +
-        labs(
-          title = paste("Items per Patient - BNF Code:", unique(.x$bnf)),
-          y = "Items per patient",
-          col = "Location Class",
-          x = "Date"
-        )
-    })
-  )
+codes_tmp <- list.files(
+  pattern = paste0(params$current_caz, "_\\d{2}.png$"),
+  path = "qmds_ghpages/figures/"
+)
 
-for (plot in bnf_plots$plots) {
-  print(plot)
+for (code in codes_tmp) {
+  capt = stringr::str_extract(code, "\\d{2}")
+
+  cat("#### BNF Code ", capt, "\n\n", sep = "")
+  cat("![](../figures/", code, ")\n\n", sep = "")
 }
+
 ```
 
 ---
 
 ## Part 2: Hospital Admissions (Fingertips)
 
-### Introduction
-
-This section analyzes hospital admissions data for under-19-year-olds, examining whether CAZ implementation is associated with changes in asthma-related health outcomes.
-
-### Data Loading and Pre-processing
-
-```{r}
-#| label: setup-fingertips
-#| message: false
-
-# Load pre-computed admissions data
-load(file = file.path(here(), "data_raw", "admisions_data.rda"))
-
-# Filter for this specific CAZ
-current_caz <- "Sheffield"
-caz_admissions_data <- CAZ_admissions |>
-  filter(AreaName == current_caz)
-```
 
 ### Hospital Admissions Over Time
 
 We plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.
 
-```{r}
-#| label: plot-admissions
-#| message: false
-#| warning: false
+![](../figures/admissions_`{r} params$current_caz`.png)
 
-admissions_plot <- caz_admissions_data |>
-  filter(Sex == "Persons") |>
-  ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +
-  geom_line(
-    data = admissions_control,
-    col = "black",
-    linetype = "dashed",
-    linewidth = 1
-  ) +
-  geom_line(linewidth = 1) +
-  scale_x_continuous(breaks = unique(caz_admissions_data$TimeperiodSortable)) +
-  facet_grid(Age ~ ., scales = "free_y") +
-  theme_light() +
-  scale_color_manual(values = c("#1b9e77")) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(
-    title = "Hospital Admissions for Under 19-years-olds - Sheffield",
-    y = "per 100,000",
-    x = "Time Period",
-    col = "Area"
-  )
-
-print(admissions_plot)
-```
-
-### Admissions Data Table
-
-Detailed admissions data for Sheffield:
-
-```{r}
-#| label: table-admissions
-
-caz_admissions_data |>
-  filter(Sex == "Persons") |>
-  knitr::kable(format = "html") |>
-  kable_paper() |>
-  scroll_box(width = "100%", height = "500px")
-```
-
----
-
-## Summary
-
-This comprehensive analysis for Sheffield presents both prescription trends and hospital admission outcomes in the context of Clean Air Zone implementation in 2023. The combination of prescription and health outcome data provides a multi-faceted view of potential CAZ impacts on respiratory health in the Sheffield population.

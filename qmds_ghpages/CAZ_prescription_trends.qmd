@@ -42,6 +42,14 @@ pkgs = c(
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 
+dir.create(
+  file.path(
+    here(),
+    "qmds_ghpages/figures"
+  ),
+  showWarnings = FALSE
+)
+
 ```
 
 ## Loading data
@@ -398,14 +406,27 @@ plots_SABA_ratio <- CAZ_SABA |>
 ```
 
 ```{r}
-#| eval: false
 #| message: false
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_ratio$plots) {
-  print(i)
-}
+# Loop to display title and plot
+lapply(seq_along(plots_SABA_ratio$plots), \(i) {
+  title <- "SABA_ratio"
+  caz <- plots_SABA_ratio$CAZ_name[i]
+  ggsave(
+    plot = plots_SABA_ratio$plots[[i]],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
 ```
 
 #### SABA numerator
@@ -473,14 +494,28 @@ plots_SABA_numerator <- CAZ_SABA |>
 ```
 
 ```{r}
-#| eval: false
 #| message: false
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_numerator$plots) {
-  print(i)
-}
+# Loop to display title and plot
+lapply(seq_along(plots_SABA_numerator$plots), \(i) {
+  title <- "SABA_numerator"
+  caz <- plots_SABA_numerator$CAZ_name[i]
+  ggsave(
+    plot = plots_SABA_numerator$plots[[i]],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
+
 ```
 
 #### SABA denominator (all inhalers)
@@ -547,14 +582,29 @@ plots_SABA_denominator <- CAZ_SABA |>
 ```
 
 ```{r}
-#| eval: false
 #| message: false
 #| error: false
 #| warning: false
 
-for (i in plots_SABA_denominator$plots) {
-  print(i)
-}
+# Loop to display title and plot
+lapply(seq_along(plots_SABA_denominator$plots), \(i) {
+  title <- "SABA_denominator"
+  caz <- plots_SABA_denominator$CAZ_name[i]
+  ggsave(
+    plot = plots_SABA_denominator$plots[[i]],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
+
+
 ```
 
 ### Montelukast prescriptions
@@ -650,9 +700,7 @@ plots_mtlkst <- CAZ_mtlkst |>
 ```
 
 ```{r}
-#| eval: false
 #| echo: false
-#| results: asis
 #| message: false
 #| warning: false
 
@@ -661,16 +709,24 @@ bnf_codes <- plots_mtlkst$bnf |> unique()
 caz_codes <- plots_mtlkst$CAZ_name |> unique()
 
 # Loop to display title and plot
-for (title in bnf_codes) {
-  cat("#####  BNF code:", title, "\n\n") # Print markdown title
-  for (caz in caz_codes) {
-    cat("######  CAZ:", caz, "\n\n") # Print markdown title
-    print(plots_mtlkst$plots[
+lapply(seq_along(plots_mtlkst$plots), \(i) {
+  title <- plots_mtlkst$bnf[i]
+  caz <- plots_mtlkst$CAZ_name[i]
+  ggsave(
+    plot = plots_mtlkst$plots[
       plots_mtlkst$bnf == title & plots_mtlkst$CAZ_name == caz
-    ]) # Render the plot
-    cat("\n\n") # Space between entries
-  }
-}
+    ],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
 
 ```
 
@@ -773,9 +829,7 @@ plots_bnf <- CAZ_bnf |>
 ```
 
 ```{r}
-#| eval: false
 #| echo: false
-#| results: asis
 #| message: false
 #| warning: false
 
@@ -784,13 +838,23 @@ bnf_codes <- plots_bnf$bnf |> unique()
 caz_codes <- plots_bnf$CAZ_name |> unique()
 
 # Loop to display title and plot
-for (title in bnf_codes) {
-  cat("######  BNF code:", title, "\n\n") # Print markdown title
-  for (caz in caz_codes) {
-    cat("#######  CAZ:", caz, "\n\n") # Print markdown title
-    print(plots_bnf$plots[plots_bnf$bnf == title & plots_bnf$CAZ_name == caz]) # Render the plot
-    cat("\n\n") # Space between entries
-  }
-}
+lapply(seq_along(plots_bnf$plots), \(i) {
+  title <- plots_bnf$bnf[i]
+  caz <- plots_bnf$CAZ_name[i]
+  ggsave(
+    plot = plots_bnf$plots[
+      plots_bnf$bnf == title & plots_bnf$CAZ_name == caz
+    ],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
 
 ```

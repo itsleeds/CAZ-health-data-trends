@@ -194,8 +194,6 @@ admissions_control <- admissions_data |>
     .by = c(TimeperiodSortable, Age)
   ) |>
   mutate(Value = (1e5 * Count) / Denominator, AreaName = "Control")
-
-save(CAZ_admissions, admissions_control, file = "./data_raw/admisions_data.rda")
 ```
 
 
@@ -226,4 +224,52 @@ CAZ_admissions |>
   knitr::kable(format = "html") |>
   kable_paper() |>
   scroll_box(width = "100%", height = "5%")
+```
+
+Producing individual plots for each CAZ
+
+```{r}
+names_correspondence <- bind_cols(
+  caz_boundaries |>
+    st_drop_geometry() |>
+    arrange(name) |>
+    select(name),
+  CAZ_admissions |>
+    select(AreaName) |>
+    unique() |>
+    arrange(AreaName)
+)
+
+for (i in 1:nrow(names_correspondence)) {
+  caz_name <- names_correspondence$name[i]
+  area_name <- names_correspondence$AreaName[i]
+
+  admissions_tmp <- CAZ_admissions |>
+    filter(AreaName == area_name, Sex == "Persons") |>
+    ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +
+    geom_line(data = admissions_control, col = "black", linetype = "dashed") +
+    geom_line() +
+    scale_x_continuous(breaks = unique(CAZ_admissions$TimeperiodSortable)) +
+    facet_grid(Age ~ ., scales = "free_y") +
+    theme_light() +
+    guides(col = "none") +
+    scale_color_discrete(type = "qual", palette = "Dark2") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(
+      title = "Hospital Admissions for Under 19-years-olds",
+      subtitle = caz_name,
+      y = "per 100,000",
+      x = NULL
+    )
+
+  ggsave(
+    filename = paste0("qmds_ghpages/figures/admissions_", caz_name, ".png"),
+    plot = admissions_tmp,
+    width = 15,
+    height = 10,
+    dpi = 300,
+    units = "cm"
+  )
+}
+
 ```

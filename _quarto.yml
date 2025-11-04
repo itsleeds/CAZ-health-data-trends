@@ -38,6 +38,22 @@ website:
             text: Correlation Analysis
           - href: qmds_ghpages/fingertips_trends.qmd
             text: Under 19 yrs hospital admissions for asthma
+      - section: CAZ Results
+        contents:
+          - href: qmds_ghpages/03_results/Sheffield_results.qmd
+            text: Sheffield
+          - href: qmds_ghpages/03_results/Bath_and_North_East_Somerset_results.qmd
+            text: Bath and North East Somerset
+          - href: qmds_ghpages/03_results/Birmingham_results.qmd
+            text: Birmingham
+          - href: qmds_ghpages/03_results/Bristol_results.qmd
+            text: Bristol
+          - href: qmds_ghpages/03_results/Bradford_results.qmd
+            text: Bradford
+          - href: qmds_ghpages/03_results/Portsmouth_results.qmd
+            text: Portsmouth
+          - href: qmds_ghpages/03_results/Newcastle_upon_Tyne_results.qmd
+            text: Newcastle upon Tyne
       - qmds_ghpages/about.qmd
 
 format:
@@ -47,7 +63,7 @@ format:
       - brand
     css: styles.css
     toc: true
-    toc-depth: 5
+    toc-depth: 4
     code-fold: true
     code-summary: "Show the code"
 

@@ -23,3 +23,5 @@ _site/
 _freeze/*
 _freeze/
 **/*.quarto_ipynb
+
+qmds_ghpages/figures/*

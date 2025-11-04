@@ -1,0 +1,77 @@
+---
+title: "CAZ Results"
+params:
+  current_caz: "Newcastle upon Tyne"
+---
+
+## Overview
+
+This page presents comprehensive analysis for the **`{r} params$current_caz`** Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.
+
+---
+
+## Part 1: Prescription Trends
+
+### Introduction
+
+This section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.
+
+### SABA Analysis
+
+#### SABA Ratio
+
+Comparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.
+
+![SABA Ratio Trend](../figures/trend_`{r} params$current_caz`_SABA_ratio.png)
+
+#### SABA Numerator (per patient)
+
+Prescription rates of SABA inhalers per registered patient.
+
+![SABA Numerator Trend](../figures/trend_`{r} params$current_caz`_SABA_numerator.png)
+
+#### SABA Denominator (all inhalers per patient)
+
+Overall inhaler prescription rates as a baseline metric.
+
+![SABA Denominator Trend](../figures/trend_`{r} params$current_caz`_SABA_denominator.png)
+
+### Montelukast Analysis
+
+Prescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.
+
+![Montelukast Trend](../figures/trend_`{r} params$current_caz`_0303020G0.png)
+
+### Main BNF Codes Analysis
+
+Prescription trends across all main BNF medication categories.
+
+```{r}
+#| label: insert-main-bnf-figures
+#| results: asis
+
+codes_tmp <- list.files(
+  pattern = paste0(params$current_caz, "_\\d{2}.png$"),
+  path = "qmds_ghpages/figures/"
+)
+
+for (code in codes_tmp) {
+  capt = stringr::str_extract(code, "\\d{2}")
+
+  cat("#### BNF Code ", capt, "\n\n", sep = "")
+  cat("![](../figures/", code, ")\n\n", sep = "")
+}
+
+```
+
+---
+
+## Part 2: Hospital Admissions (Fingertips)
+
+
+### Hospital Admissions Over Time
+
+We plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_`{r} params$current_caz`.png)
+

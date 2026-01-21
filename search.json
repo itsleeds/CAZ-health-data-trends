@@ -432,28 +432,44 @@
     "href": "qmds_ghpages/03_results/BANES_results.html",
     "title": "CAZ Results",
     "section": "",
-    "text": "This page presents comprehensive analysis for the BANES Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups."
+    "text": "This page presents comprehensive analysis for the BANES Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Bath and North East Somerset"
+    ]
   },
   {
     "objectID": "qmds_ghpages/03_results/BANES_results.html#overview",
     "href": "qmds_ghpages/03_results/BANES_results.html#overview",
     "title": "CAZ Results",
     "section": "",
-    "text": "This page presents comprehensive analysis for the BANES Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups."
+    "text": "This page presents comprehensive analysis for the BANES Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Bath and North East Somerset"
+    ]
   },
   {
     "objectID": "qmds_ghpages/03_results/BANES_results.html#part-1-prescription-trends",
     "href": "qmds_ghpages/03_results/BANES_results.html#part-1-prescription-trends",
     "title": "CAZ Results",
     "section": "Part 1: Prescription Trends",
-    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23"
+    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "crumbs": [
+      "CAZ Results",
+      "Bath and North East Somerset"
+    ]
   },
   {
     "objectID": "qmds_ghpages/03_results/BANES_results.html#part-2-hospital-admissions-fingertips",
     "href": "qmds_ghpages/03_results/BANES_results.html#part-2-hospital-admissions-fingertips",
     "title": "CAZ Results",
     "section": "Part 2: Hospital Admissions (Fingertips)",
-    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison."
+    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "crumbs": [
+      "CAZ Results",
+      "Bath and North East Somerset"
+    ]
   },
   {
     "objectID": "qmds_ghpages/03_results/Birmingham_results.html",

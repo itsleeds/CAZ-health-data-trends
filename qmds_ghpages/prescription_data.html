@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a35d343c8bdbcb87d3b82ed68e48a46c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -104,6 +104,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../styles.css">
 </head>
@@ -131,8 +160,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
-      <a href="../index.html" class="sidebar-logo-link">
-      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">CAZ Health Indicators Trends</a> 
+    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -305,6 +335,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#bnf-code-discovery" id="toc-bnf-code-discovery" class="nav-link" data-scroll-target="#bnf-code-discovery">BNF Code Discovery</a></li>
   <li><a href="#montelukast" id="toc-montelukast" class="nav-link" data-scroll-target="#montelukast">Montelukast</a></li>
+  <li><a href="#anxiolytics-and-antidepressants" id="toc-anxiolytics-and-antidepressants" class="nav-link" data-scroll-target="#anxiolytics-and-antidepressants">Anxiolytics and Antidepressants</a></li>
+  <li><a href="#oral-steroid-methylprednisolone" id="toc-oral-steroid-methylprednisolone" class="nav-link" data-scroll-target="#oral-steroid-methylprednisolone">Oral Steroid Methylprednisolone</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -452,7 +484,7 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove</span>(<span class="st">"/$"</span>)</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>links <span class="ot">&lt;-</span> links[<span class="fu">order</span>(<span class="fu">nchar</span>(links))]</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2020-08-01"</span>), <span class="fu">as.Date</span>(<span class="st">"2025-03-01"</span>), <span class="st">"months"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2021-01-01"</span>), <span class="fu">as.Date</span>(<span class="st">"2025-11-01"</span>), <span class="st">"months"</span>)</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>full_data_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">code =</span> links, <span class="at">date =</span> dates) <span class="sc">|&gt;</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">group =</span> <span class="fu">nchar</span>(code), <span class="at">file.name =</span> <span class="fu">paste0</span>(code, <span class="st">"_"</span>, date, <span class="st">".csv"</span>))</span>
@@ -513,6 +545,49 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+</section>
+<section id="anxiolytics-and-antidepressants" class="level3">
+<h3 class="anchored" data-anchor-id="anxiolytics-and-antidepressants">Anxiolytics and Antidepressants</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mont_data_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">code =</span> <span class="fu">c</span>(<span class="st">"0403"</span>,<span class="st">"040102"</span>), <span class="at">date =</span> dates) <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">group =</span> <span class="fu">nchar</span>(code), <span class="at">file.name =</span> <span class="fu">paste0</span>(code, <span class="st">"_"</span>, date, <span class="st">".csv"</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data_raw/bnf_all"</span>, <span class="at">showWarnings =</span> F)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>all_bnf_codes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_len</span>(mont_data_grid <span class="sc">|&gt;</span> <span class="fu">nrow</span>()), \(x) {</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">file.exists</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"bnf_all"</span>, mont_data_grid<span class="sc">$</span>file.name[x]))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  ) {</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">download.file</span>(</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">paste0</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&amp;code="</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        mont_data_grid<span class="sc">$</span>code[x],</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"&amp;date="</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        mont_data_grid<span class="sc">$</span>date[x],</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"&amp;format=csv"</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">destfile =</span> <span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"bnf_all"</span>, mont_data_grid<span class="sc">$</span>file.name[x]),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">mode =</span> <span class="st">"wb"</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="oral-steroid-methylprednisolone" class="level3">
+<h3 class="anchored" data-anchor-id="oral-steroid-methylprednisolone">Oral Steroid Methylprednisolone</h3>
+<p>meth_data_grid &lt;- expand_grid(code = “0603020S0”, date = dates) |&gt; mutate(group = nchar(code), file.name = paste0(code, “_“, date,”.csv”))</p>
+<p>dir.create(“data_raw/bnf_all”, showWarnings = F) all_bnf_codes &lt;- lapply(seq_len(meth_data_grid |&gt; nrow()), (x) { if ( !file.exists(file.path(“data_raw”, “bnf_all”, meth_data_grid<span class="math inline">\(file.name[x]))
+  ) {
+    download.file(
+      paste0(
+        "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&amp;code=",
+        meth_data_grid\)</span>code[x], “&amp;date=”, meth_data_grid<span class="math inline">\(date[x],
+        "&amp;format=csv"
+      ),
+      destfile = file.path("data_raw", "bnf_all", meth_data_grid\)</span>file.name[x]), mode = “wb” ) } })</p>
 
 
 </section>

@@ -113,7 +113,7 @@ links <- links[grep("/bnf/\\d{2,6}/$", links)] |>
   str_remove("/$")
 links <- links[order(nchar(links))]
 
-dates <- seq(as.Date("2020-08-01"), as.Date("2025-03-01"), "months")
+dates <- seq(as.Date("2021-01-01"), as.Date("2025-06-01"), "months")
 
 full_data_grid <- expand_grid(code = links, date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
@@ -172,3 +172,30 @@ all_bnf_codes <- lapply(seq_len(mont_data_grid |> nrow()), \(x) {
 })
 
 ```
+
+
+### Anxiolytics and Antidepressants
+
+```{r}
+mont_data_grid <- expand_grid(code = c("0403","040102"), date = dates) |>
+  mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
+
+
+dir.create("data_raw/bnf_all", showWarnings = F)
+all_bnf_codes <- lapply(seq_len(mont_data_grid |> nrow()), \(x) {
+  if (
+    !file.exists(file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]))
+  ) {
+    download.file(
+      paste0(
+        "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
+        mont_data_grid$code[x],
+        "&date=",
+        mont_data_grid$date[x],
+        "&format=csv"
+      ),
+      destfile = file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]),
+      mode = "wb"
+    )
+  }
+})

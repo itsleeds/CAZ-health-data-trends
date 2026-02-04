@@ -68,7 +68,8 @@ subicb_boundaries <- st_read(
   ),
   quiet = TRUE
 )
-pract_classed <- st_read("data_raw/CAZ_practices.gpkg", quiet = TRUE)
+pract_classed <- st_read(file.path(here(), "data_raw", "CAZ_practices.gpkg"),
+ quiet = TRUE)
 all_practices <- st_read(
   file.path(here(), "data_raw", "all_practices_urban_rural.gpkg"),
   quiet = TRUE
@@ -146,6 +147,22 @@ get_code_data <- function(code) {
 
 all_mtlkt_data <- get_code_data(code = "0303020G0")
 ```
+
+Loading for annxiolytics and antidepressants
+
+```{r}
+all_antd_data <- get_code_data(code = "0403")
+all_anx_data <- get_code_data(code = "040102")
+
+```
+
+Loading for Methylprednisolone
+
+```{r}
+all_meth_data <- get_code_data(code = "0603020S0")
+
+```
+
 
 ## Preparing data
 
@@ -319,6 +336,110 @@ noCAZ_mtlkst <- all_mtlkt_data[
   )
 ```
 
+### Subsetting data of Anxiolytics andAntidepressants
+
+```{r}
+CAZ_antd <- all_antd_data[row_id %in% CAZ_practices$code, ][, `:=`(
+  month = month(date),
+  year = year(date)
+)] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  )
+
+noCAZ_antd <- all_antd_data[
+  !row_id %in% CAZ_practices$code & row_id %in% all_other_codes,
+][, `:=`(month = month(date), year = year(date))] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  ) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
+
+CAZ_anx <- all_anx_data[row_id %in% CAZ_practices$code, ][, `:=`(
+  month = month(date),
+  year = year(date)
+)] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  )
+
+noCAZ_anx <- all_anx_data[
+  !row_id %in% CAZ_practices$code & row_id %in% all_other_codes,
+][, `:=`(month = month(date), year = year(date))] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  ) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
+
+
+```
+
+
+### Subsetting data of Oral steroids 
+
+```{r}
+CAZ_meth <- all_meth_data[row_id %in% CAZ_practices$code, ][, `:=`(
+  month = month(date),
+  year = year(date)
+)] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  )
+
+noCAZ_meth <- all_meth_data[
+  !row_id %in% CAZ_practices$code & row_id %in% all_other_codes,
+][, `:=`(month = month(date), year = year(date))] |>
+  left_join(
+    patient_num_df |> select(CODE, NUMBER_OF_PATIENTS, month, year),
+    by = c("row_id" = "CODE", "month", "year")
+  ) |>
+  mutate(location_class = "Control") |>
+  mutate(
+    location_class = factor(
+      location_class,
+      levels = c(
+        "within CAZ",
+        "within 1km",
+        "within 5km",
+        "out CAZ",
+        "Control"
+      ),
+      ordered = T
+    )
+  )
+```
+
 ### Saving outputs for other analyses
 
 ```{r}
@@ -328,6 +449,12 @@ save(
   noCAZ_bnf,
   CAZ_mtlkst,
   noCAZ_mtlkst,
+  CAZ_antd,
+  noCAZ_antd,
+  CAZ_anx,
+  noCAZ_anx,
+  CAZ_meth,
+  noCAZ_meth,
   noCAZ_SABA,
   CAZ_SABA,
   CAZ_practices,
@@ -409,6 +536,7 @@ plots_SABA_ratio <- CAZ_SABA |>
 #| message: false
 #| error: false
 #| warning: false
+#| output: false
 
 # Loop to display title and plot
 lapply(seq_along(plots_SABA_ratio$plots), \(i) {
@@ -497,6 +625,7 @@ plots_SABA_numerator <- CAZ_SABA |>
 #| message: false
 #| error: false
 #| warning: false
+#| output: false
 
 # Loop to display title and plot
 lapply(seq_along(plots_SABA_numerator$plots), \(i) {
@@ -585,6 +714,7 @@ plots_SABA_denominator <- CAZ_SABA |>
 #| message: false
 #| error: false
 #| warning: false
+#| output: false
 
 # Loop to display title and plot
 lapply(seq_along(plots_SABA_denominator$plots), \(i) {
@@ -703,6 +833,7 @@ plots_mtlkst <- CAZ_mtlkst |>
 #| echo: false
 #| message: false
 #| warning: false
+#| output: false
 
 bnf_codes <- plots_mtlkst$bnf |> unique()
 
@@ -730,7 +861,379 @@ lapply(seq_along(plots_mtlkst$plots), \(i) {
 
 ```
 
- 
+
+### Antidepressants prescriptions
+
+Processing data
+
+```{r}
+noCAZ_antd_aggre <- noCAZ_antd |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, month, year, date, bnf)
+  )
+noCAZ_antd_aggre$date <- as.Date(noCAZ_antd_aggre$date)
+CAZ_antd$date <- as.Date(CAZ_antd$date)
+
+noCAZ_antd_nest <- noCAZ_antd_aggre |>
+  nest(.by = bnf, .key = "control_data")
+```
+
+#### Visualisations
+
+Preparing plots
+
+```{r}
+plots_antd <- CAZ_antd |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("row_id" = "code")
+  ) |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, CAZ_name, month, year, date, bnf)
+  ) |>
+  nest(.by = c(CAZ_name, bnf)) |>
+  left_join(
+    CAZ_lst |>
+      select(CAZ, Start),
+    by = c("CAZ_name" = "CAZ")
+  ) |>
+  left_join(noCAZ_antd_nest, by = "bnf") |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        filter(year >= .y)
+    }),
+    trend_data = map2(trend_data, control_data, \(.x, .y) {
+      .x |>
+        bind_rows(
+          .y |>
+            filter(year >= min(.x$year))
+        )
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = items / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,0.7))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Items per patient",
+          col = "Location Class",
+          x = ""
+        )
+    }),
+    plots = map2(plots, bnf, \(.x, .y) {
+      .x + labs(subtitle = paste("BNF code:", .y))
+    })
+  )
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| output: false
+
+bnf_codes <- plots_antd$bnf |> unique()
+
+caz_codes <- plots_antd$CAZ_name |> unique()
+
+# Loop to display title and plot
+lapply(seq_along(plots_antd$plots), \(i) {
+  title <- plots_antd$bnf[i]
+  caz <- plots_antd$CAZ_name[i]
+  ggsave(
+    plot = plots_antd$plots[
+      plots_antd$bnf == title & plots_antd$CAZ_name == caz
+    ],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
+
+```
+### Anxiolytics prescriptions
+
+Processing data
+
+```{r}
+noCAZ_anx_aggre <- noCAZ_anx |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, month, year, date, bnf)
+  )
+noCAZ_anx_aggre$date <- as.Date(noCAZ_anx_aggre$date)
+CAZ_anx$date <- as.Date(CAZ_anx$date)
+
+noCAZ_anx_nest <- noCAZ_anx_aggre |>
+  nest(.by = bnf, .key = "control_data")
+```
+
+#### Visualisations
+
+Preparing plots
+
+```{r}
+plots_anx <- CAZ_anx |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("row_id" = "code")
+  ) |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, CAZ_name, month, year, date, bnf)
+  ) |>
+  nest(.by = c(CAZ_name, bnf)) |>
+  left_join(
+    CAZ_lst |>
+      select(CAZ, Start),
+    by = c("CAZ_name" = "CAZ")
+  ) |>
+  left_join(noCAZ_anx_nest, by = "bnf") |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        filter(year >= .y)
+    }),
+    trend_data = map2(trend_data, control_data, \(.x, .y) {
+      .x |>
+        bind_rows(
+          .y |>
+            filter(year >= min(.x$year))
+        )
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = items / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        # scale_y_continuous(limits = c(0,0.7))+
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Items per patient",
+          col = "Location Class",
+          x = ""
+        )
+    }),
+    plots = map2(plots, bnf, \(.x, .y) {
+      .x + labs(subtitle = paste("BNF code:", .y))
+    })
+  )
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| output: false
+
+bnf_codes <- plots_anx$bnf |> unique()
+
+caz_codes <- plots_anx$CAZ_name |> unique()
+
+# Loop to display title and plot
+lapply(seq_along(plots_anx$plots), \(i) {
+  title <- plots_anx$bnf[i]
+  caz <- plots_anx$CAZ_name[i]
+  ggsave(
+    plot = plots_anx$plots[
+      plots_anx$bnf == title & plots_anx$CAZ_name == caz
+    ],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
+
+```
+
+### Methylprednisolone prescriptions
+
+Processing data
+
+```{r}
+noCAZ_meth_aggre <- noCAZ_meth |> 
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, month, year, date, bnf)
+  )
+
+noCAZ_meth_aggre$date <- as.Date(noCAZ_meth_aggre$date)
+CAZ_meth$date <- as.Date(CAZ_meth$date)
+
+noCAZ_meth_nest <- noCAZ_meth_aggre |> 
+  nest(.by = bnf, .key = "control_data")
+```
+
+#### Visualisations
+
+Preparing plots
+
+```{r}
+plots_meth <- CAZ_meth |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("row_id" = "code")
+  ) |>
+  summarise(
+    across(c(NUMBER_OF_PATIENTS, items, quantity), \(x) sum(x, na.rm = T)),
+    .by = c(location_class, CAZ_name, month, year, date, bnf)
+  ) |>
+  nest(.by = c(CAZ_name, bnf)) |>
+  left_join(
+    CAZ_lst |>
+      select(CAZ, Start),
+    by = c("CAZ_name" = "CAZ")
+  ) |>
+  left_join(noCAZ_meth_nest, by = "bnf") |>
+  mutate(
+    trend_data = map2(data, Start, \(.x, .y) {
+      .x |>
+        filter(year >= .y)
+    }),
+    trend_data = map2(trend_data, control_data, \(.x, .y) {
+      .x |>
+        bind_rows(
+          .y |>
+            filter(year >= min(.x$year))
+        )
+    })
+  ) |>
+  mutate(
+    plots = map2(data, trend_data, \(.x, .y) {
+      .x |>
+        ggplot(aes(
+          x = date,
+          y = items / NUMBER_OF_PATIENTS,
+          colour = location_class
+        )) +
+        geom_line(aes(group = location_class), alpha = 0.2, linewidth = 0.2) +
+        geom_smooth(
+          data = .y,
+          method = "lm",
+          formula = 'y ~ x',
+          se = F,
+          aes(linetype = location_class)
+        ) +
+        theme_minimal() +
+        scale_colour_manual(
+          values = c(cols4all::c4a(palette = "set1")[1:4], "gray30")
+        ) +
+        scale_linetype_manual(values = c(rep("solid", 4), "dashed")) +
+        guides(linetype = "none")
+    }),
+    plots = map2(plots, CAZ_name, \(.x, .y) {
+      .x +
+        labs(
+          title = .y,
+          y = "Items per patient",
+          col = "Location Class",
+          x = ""
+        )
+    }),
+    plots = map2(plots, bnf, \(.x, .y) {
+      .x + labs(subtitle = paste("BNF code:", .y))
+    })
+  )
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| output: false
+
+bnf_codes <- plots_meth$bnf |> unique()
+
+caz_codes <- plots_meth$CAZ_name |> unique()
+
+# Loop to display title and plot
+lapply(seq_along(plots_meth$plots), \(i) {
+  title <- plots_meth$bnf[i]
+  caz <- plots_meth$CAZ_name[i]
+  ggsave(
+    plot = plots_meth$plots[
+      plots_meth$bnf == title & plots_meth$CAZ_name == caz
+    ],
+    units = "mm",
+    width = 180,
+    height = 120,
+    dpi = 330,
+    filename = file.path(
+      here(),
+      "qmds_ghpages/figures",
+      paste0("trend_", caz, "_", title, ".png")
+    )
+  )
+})
+
+```
+
+
 
 ### Main BNF codes
 
@@ -832,6 +1335,7 @@ plots_bnf <- CAZ_bnf |>
 #| echo: false
 #| message: false
 #| warning: false
+#| output: false
 
 bnf_codes <- plots_bnf$bnf |> unique()
 

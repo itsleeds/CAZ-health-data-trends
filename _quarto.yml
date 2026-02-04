@@ -42,7 +42,7 @@ website:
         contents:
           - href: qmds_ghpages/03_results/Sheffield_results.qmd
             text: Sheffield
-          - href: qmds_ghpages/03_results/Bath_and_North_East_Somerset_results.qmd
+          - href: qmds_ghpages/03_results/BANES_results.qmd
             text: Bath and North East Somerset
           - href: qmds_ghpages/03_results/Birmingham_results.qmd
             text: Birmingham

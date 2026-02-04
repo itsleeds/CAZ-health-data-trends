@@ -42,6 +42,24 @@ Prescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor
 
 ![Montelukast Trend](../figures/trend_`{r} params$current_caz`_0303020G0.png)
 
+### Antidepressants Analysis
+
+Prescription trends for Antidepressants (BNF code 0403).
+
+![Antidepressants Trend](../figures/trend_`{r} params$current_caz`_0403.png)
+
+### Anxiolytics Analysis
+
+Prescription trends for Anxiolytics (BNF code 040102).
+
+![Anxiolytics Trend](../figures/trend_`{r} params$current_caz`_040102.png)
+
+### Methylprednisolone Analysis
+
+Prescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.
+
+![Methylprednisolone Trend](../figures/trend_`{r} params$current_caz`_0603020S0.png)
+
 ### Main BNF Codes Analysis
 
 Prescription trends across all main BNF medication categories.

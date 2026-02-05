@@ -296,135 +296,843 @@
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Sheffield_results.html",
-    "href": "qmds_ghpages/03_results/Sheffield_results.html",
-    "title": "CAZ Results",
+    "objectID": "qmds_ghpages/03_results/template_DiD.html",
+    "href": "qmds_ghpages/03_results/template_DiD.html",
+    "title": "Difference-in-Differences Analysis",
     "section": "",
-    "text": "This page presents comprehensive analysis for the Sheffield Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress."
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#overview",
+    "href": "qmds_ghpages/03_results/template_DiD.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Bradford’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London)."
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#setup",
+    "href": "qmds_ghpages/03_results/template_DiD.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#data-preparation-for-bradford",
+    "href": "qmds_ghpages/03_results/template_DiD.html#data-preparation-for-bradford",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Bradford",
+    "text": "Data Preparation for Bradford\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/template_DiD.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n20\n76.33\n3.82\n\n\nControl\nPost-CAZ\n36\n74.52\n3.10\n\n\nBradford\nPre-CAZ\n60\n80.06\n6.12\n\n\nBradford\nPost-CAZ\n108\n80.53\n5.04"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/template_DiD.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#difference-plot",
+    "href": "qmds_ghpages/03_results/template_DiD.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/template_DiD.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-13.3446  -3.1470   0.5743   3.2942  14.0137 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      76.326      1.122  68.022  &lt; 2e-16 ***\ntreatment         3.731      1.296   2.879  0.00438 ** \npost             -1.803      1.399  -1.288  0.19896    \ntreatment:post    2.273      1.616   1.406  0.16099    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 5.018 on 220 degrees of freedom\nMultiple R-squared:  0.1759,    Adjusted R-squared:  0.1647 \nF-statistic: 15.65 on 3 and 220 DF,  p-value: 2.909e-09\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.616\n1.406\n0.161\n-0.912\n5.458\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-13.3592  -2.9737   0.5297   3.1520  14.3194 \n\nCoefficients:\n                  Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)       75.98770    1.18899  63.909   &lt;2e-16 ***\ntreatment          3.73085    1.29641   2.878   0.0044 ** \npost              -0.90262    1.74509  -0.517   0.6055    \ntime_to_treatment -0.03217    0.03721  -0.865   0.3882    \ntreatment:post     2.27287    1.61691   1.406   0.1612    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 5.021 on 219 degrees of freedom\nMultiple R-squared:  0.1787,    Adjusted R-squared:  0.1637 \nF-statistic: 11.91 on 4 and 219 DF,  p-value: 8.928e-09\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.617\n1.406\n0.161\n-0.914\n5.46\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-11.444  -2.822   0.144   2.620   9.776 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.2099     1.4131  55.348  &lt; 2e-16 ***\ntreatment         3.7308     1.0943   3.409 0.000781 ***\npost             -1.5574     1.1850  -1.314 0.190209    \nfactor(month)2   -7.4716     1.4984  -4.986 1.29e-06 ***\nfactor(month)3   -0.5323     1.4984  -0.355 0.722784    \nfactor(month)4   -5.4291     1.4984  -3.623 0.000365 ***\nfactor(month)5   -3.4996     1.4244  -2.457 0.014827 *  \nfactor(month)6   -3.8464     1.4244  -2.700 0.007492 ** \nfactor(month)7   -1.9843     1.4244  -1.393 0.165064    \nfactor(month)8   -5.4349     1.4244  -3.816 0.000179 ***\nfactor(month)9   -0.5425     1.4244  -0.381 0.703659    \nfactor(month)10   1.1113     1.4244   0.780 0.436137    \nfactor(month)11  -0.2791     1.4244  -0.196 0.844841    \nfactor(month)12   2.3541     1.4244   1.653 0.099886 .  \ntreatment:post    2.2729     1.3648   1.665 0.097350 .  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 4.238 on 209 degrees of freedom\nMultiple R-squared:  0.4415,    Adjusted R-squared:  0.4041 \nF-statistic:  11.8 on 14 and 209 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.365\n1.665\n0.097\n-0.418\n4.963"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/template_DiD.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n2.273\n1.616\n1.406\n0.161\n-0.912\n5.458\n\n\nWith Time Trend\n2.273\n1.617\n1.406\n0.161\n-0.914\n5.460\n\n\nWith Month FE\n2.273\n1.365\n1.665\n0.097\n-0.418\n4.963"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/template_DiD.html#interpretation",
+    "href": "qmds_ghpages/03_results/template_DiD.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: 2.273 inhalers per 1,000 patients (95% CI: [-0.912, 5.458])\nP-value: 0.161\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a positive effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 2.27 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05"
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
+    "section": "",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Sheffield"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#overview",
-    "href": "qmds_ghpages/03_results/Sheffield_results.html#overview",
-    "title": "CAZ Results",
-    "section": "",
-    "text": "This page presents comprehensive analysis for the Sheffield Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Sheffield’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Sheffield"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#part-1-prescription-trends",
-    "href": "qmds_ghpages/03_results/Sheffield_results.html#part-1-prescription-trends",
-    "title": "CAZ Results",
-    "section": "Part 1: Prescription Trends",
-    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Sheffield"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#part-2-hospital-admissions-fingertips",
-    "href": "qmds_ghpages/03_results/Sheffield_results.html#part-2-hospital-admissions-fingertips",
-    "title": "CAZ Results",
-    "section": "Part 2: Hospital Admissions (Fingertips)",
-    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#data-preparation-for-sheffield",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#data-preparation-for-sheffield",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Sheffield",
+    "text": "Data Preparation for Sheffield\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Sheffield"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html",
-    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html",
-    "title": "CAZ Results",
-    "section": "",
-    "text": "This page presents comprehensive analysis for the Newcastle upon Tyne Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n32\n76.20\n3.55\n\n\nControl\nPost-CAZ\n24\n73.79\n2.84\n\n\nSheffield\nPre-CAZ\n96\n59.09\n28.19\n\n\nSheffield\nPost-CAZ\n72\n55.27\n27.51",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-39.088 -12.887   1.889  23.554  41.953 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      76.199      4.293  17.748  &lt; 2e-16 ***\ntreatment       -17.106      4.958  -3.450 0.000671 ***\npost             -2.407      6.558  -0.367 0.713981    \ntreatment:post   -1.414      7.573  -0.187 0.852093    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 24.29 on 220 degrees of freedom\nMultiple R-squared:  0.09646,   Adjusted R-squared:  0.08414 \nF-statistic: 7.829 on 3 and 220 DF,  p-value: 5.472e-05\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-1.414\n7.573\n-0.187\n0.852\n-16.338\n13.511\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-39.246 -12.981   1.992  23.586  41.846 \n\nCoefficients:\n                   Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)        75.99025    5.37922  14.127  &lt; 2e-16 ***\ntreatment         -17.10550    4.96893  -3.442  0.00069 ***\npost               -2.05384    8.55239  -0.240  0.81044    \ntime_to_treatment  -0.01261    0.19545  -0.065  0.94862    \ntreatment:post     -1.41363    7.59016  -0.186  0.85243    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 24.34 on 219 degrees of freedom\nMultiple R-squared:  0.09648,   Adjusted R-squared:  0.07998 \nF-statistic: 5.846 on 4 and 219 DF,  p-value: 0.0001731\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-1.414\n7.59\n-0.186\n0.852\n-16.373\n13.545\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-40.532 -10.511   1.877  25.359  37.492 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.0291     7.4692  10.447  &lt; 2e-16 ***\ntreatment       -17.1055     5.0672  -3.376 0.000878 ***\npost             -2.3395     6.7103  -0.349 0.727702    \nfactor(month)2   -5.2682     8.7766  -0.600 0.548989    \nfactor(month)3   -0.3866     8.7766  -0.044 0.964905    \nfactor(month)4   -4.0905     8.7766  -0.466 0.641655    \nfactor(month)5   -2.5123     8.3330  -0.301 0.763339    \nfactor(month)6   -2.3728     8.3330  -0.285 0.776119    \nfactor(month)7   -1.6633     8.3330  -0.200 0.841983    \nfactor(month)8   -4.9353     8.3330  -0.592 0.554319    \nfactor(month)9   -1.8155     8.3330  -0.218 0.827747    \nfactor(month)10  -0.9539     8.3330  -0.114 0.908972    \nfactor(month)11  -1.4065     8.3330  -0.169 0.866132    \nfactor(month)12   2.6298     8.3330   0.316 0.752630    \ntreatment:post   -1.4136     7.7402  -0.183 0.855262    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 24.82 on 209 degrees of freedom\nMultiple R-squared:  0.1033,    Adjusted R-squared:  0.04324 \nF-statistic:  1.72 on 14 and 209 DF,  p-value: 0.05357\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-1.414\n7.74\n-0.183\n0.855\n-16.673\n13.845",
+    "crumbs": [
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n-1.414\n7.573\n-0.187\n0.852\n-16.338\n13.511\n\n\nWith Time Trend\n-1.414\n7.590\n-0.186\n0.852\n-16.373\n13.545\n\n\nWith Month FE\n-1.414\n7.740\n-0.183\n0.855\n-16.673\n13.845",
+    "crumbs": [
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Sheffield_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: -1.414 inhalers per 1,000 patients (95% CI: [-16.338, 13.511])\nP-value: 0.852\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a negative effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 1.41 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
+    "section": "",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Portsmouth’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#data-preparation-for-portsmouth",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#data-preparation-for-portsmouth",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Portsmouth",
+    "text": "Data Preparation for Portsmouth\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n8\n76.53\n3.81\n\n\nControl\nPost-CAZ\n48\n74.94\n3.38\n\n\nPortsmouth\nPre-CAZ\n24\n81.83\n5.35\n\n\nPortsmouth\nPost-CAZ\n144\n81.65\n7.28",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-23.4919  -4.3931  -0.4639   3.7825  16.0491 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      76.528      2.245  34.085   &lt;2e-16 ***\ntreatment         5.298      2.593   2.044   0.0422 *  \npost             -1.588      2.425  -0.655   0.5133    \ntreatment:post    1.408      2.800   0.503   0.6156    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 6.35 on 220 degrees of freedom\nMultiple R-squared:  0.1683,    Adjusted R-squared:  0.157 \nF-statistic: 14.84 on 3 and 220 DF,  p-value: 7.83e-09\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n1.408\n2.8\n0.503\n0.616\n-4.111\n6.927\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-23.6335  -4.0187  -0.3258   3.6925  16.0208 \n\nCoefficients:\n                   Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)       76.272024   2.240176  34.047   &lt;2e-16 ***\ntreatment          5.298297   2.581027   2.053   0.0413 *  \npost              -0.004555   2.583590  -0.002   0.9986    \ntime_to_treatment -0.056571   0.032862  -1.721   0.0866 .  \ntreatment:post     1.407865   2.787827   0.505   0.6141    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 6.322 on 219 degrees of freedom\nMultiple R-squared:  0.1794,    Adjusted R-squared:  0.1644 \nF-statistic: 11.97 on 4 and 219 DF,  p-value: 8.172e-09\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n1.408\n2.788\n0.505\n0.614\n-4.087\n6.902\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-24.7122  -3.5391   0.1497   3.3533  14.2380 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      79.2739     2.5567  31.006  &lt; 2e-16 ***\ntreatment         5.2983     2.3618   2.243 0.025924 *  \npost             -1.4061     2.2289  -0.631 0.528814    \nfactor(month)2   -7.3980     2.0454  -3.617 0.000374 ***\nfactor(month)3   -0.1139     2.0454  -0.056 0.955629    \nfactor(month)4   -5.6523     2.0454  -2.763 0.006230 ** \nfactor(month)5   -4.1241     1.9538  -2.111 0.035979 *  \nfactor(month)6   -4.0428     1.9538  -2.069 0.039761 *  \nfactor(month)7   -3.5365     1.9538  -1.810 0.071727 .  \nfactor(month)8   -7.2633     1.9538  -3.717 0.000258 ***\nfactor(month)9   -3.1001     1.9538  -1.587 0.114095    \nfactor(month)10  -1.7073     1.9538  -0.874 0.383231    \nfactor(month)11  -0.8388     1.9538  -0.429 0.668157    \nfactor(month)12   2.6458     1.9538   1.354 0.177143    \ntreatment:post    1.4079     2.5510   0.552 0.581618    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 5.785 on 209 degrees of freedom\nMultiple R-squared:  0.3443,    Adjusted R-squared:  0.3003 \nF-statistic: 7.837 on 14 and 209 DF,  p-value: 2.893e-13\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n1.408\n2.551\n0.552\n0.582\n-3.621\n6.437",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n1.408\n2.800\n0.503\n0.616\n-4.111\n6.927\n\n\nWith Time Trend\n1.408\n2.788\n0.505\n0.614\n-4.087\n6.902\n\n\nWith Month FE\n1.408\n2.551\n0.552\n0.582\n-3.621\n6.437",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Portsmouth_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: 1.408 inhalers per 1,000 patients (95% CI: [-4.111, 6.927])\nP-value: 0.616\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a positive effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 1.41 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
+    "section": "",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
+    "crumbs": [
+      "DiD Analysis",
       "Newcastle upon Tyne"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#overview",
-    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#overview",
-    "title": "CAZ Results",
-    "section": "",
-    "text": "This page presents comprehensive analysis for the Newcastle upon Tyne Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Newcastle upon Tyne’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Newcastle upon Tyne"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-1-prescription-trends",
-    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-1-prescription-trends",
-    "title": "CAZ Results",
-    "section": "Part 1: Prescription Trends",
-    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Newcastle upon Tyne"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-2-hospital-admissions-fingertips",
-    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-2-hospital-admissions-fingertips",
-    "title": "CAZ Results",
-    "section": "Part 2: Hospital Admissions (Fingertips)",
-    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#data-preparation-for-newcastle-upon-tyne",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#data-preparation-for-newcastle-upon-tyne",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Newcastle upon Tyne",
+    "text": "Data Preparation for Newcastle upon Tyne\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Newcastle upon Tyne"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Bradford_results.html",
-    "href": "qmds_ghpages/03_results/Bradford_results.html",
-    "title": "CAZ Results",
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n32\n76.20\n3.55\n\n\nControl\nPost-CAZ\n24\n73.79\n2.84\n\n\nNewcastle upon Tyne\nPre-CAZ\n96\n76.58\n26.42\n\n\nNewcastle upon Tyne\nPost-CAZ\n72\n70.76\n24.06",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-45.850 -12.183   7.985  17.394  31.222 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)     76.1985     3.9165  19.456   &lt;2e-16 ***\ntreatment        0.3818     4.5224   0.084    0.933    \npost            -2.4068     5.9825  -0.402    0.688    \ntreatment:post  -3.4164     6.9080  -0.495    0.621    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 22.16 on 220 degrees of freedom\nMultiple R-squared:  0.01391,   Adjusted R-squared:  0.000468 \nF-statistic: 1.035 on 3 and 220 DF,  p-value: 0.378\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-3.416\n6.908\n-0.495\n0.621\n-17.031\n10.198\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-45.337 -12.490   7.992  17.535  30.527 \n\nCoefficients:\n                  Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)       75.19889    4.90567  15.329   &lt;2e-16 ***\ntreatment          0.38184    4.53150   0.084    0.933    \npost              -0.71241    7.79950  -0.091    0.927    \ntime_to_treatment -0.06053    0.17825  -0.340    0.734    \ntreatment:post    -3.41636    6.92198  -0.494    0.622    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 22.2 on 219 degrees of freedom\nMultiple R-squared:  0.01443,   Adjusted R-squared:  -0.003568 \nF-statistic: 0.8018 on 4 and 219 DF,  p-value: 0.5252\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-3.416\n6.922\n-0.494\n0.622\n-17.059\n10.226\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-44.477 -10.136   6.347  17.507  30.331 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      77.7167     6.8039  11.422   &lt;2e-16 ***\ntreatment         0.3818     4.6158   0.083    0.934    \npost             -2.2993     6.1125  -0.376    0.707    \nfactor(month)2   -6.0641     7.9948  -0.758    0.449    \nfactor(month)3    0.2722     7.9948   0.034    0.973    \nfactor(month)4   -4.1528     7.9948  -0.519    0.604    \nfactor(month)5   -2.8907     7.5907  -0.381    0.704    \nfactor(month)6   -1.4924     7.5907  -0.197    0.844    \nfactor(month)7   -0.8547     7.5907  -0.113    0.910    \nfactor(month)8   -4.5032     7.5907  -0.593    0.554    \nfactor(month)9   -0.6279     7.5907  -0.083    0.934    \nfactor(month)10  -0.5293     7.5907  -0.070    0.944    \nfactor(month)11  -1.1844     7.5907  -0.156    0.876    \nfactor(month)12   2.5183     7.5907   0.332    0.740    \ntreatment:post   -3.4164     7.0508  -0.485    0.629    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 22.61 on 209 degrees of freedom\nMultiple R-squared:  0.02411,   Adjusted R-squared:  -0.04126 \nF-statistic: 0.3689 on 14 and 209 DF,  p-value: 0.9821\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-3.416\n7.051\n-0.485\n0.629\n-17.316\n10.483",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n-3.416\n6.908\n-0.495\n0.621\n-17.031\n10.198\n\n\nWith Time Trend\n-3.416\n6.922\n-0.494\n0.622\n-17.059\n10.226\n\n\nWith Month FE\n-3.416\n7.051\n-0.485\n0.629\n-17.316\n10.483",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: -3.416 inhalers per 1,000 patients (95% CI: [-17.031, 10.198])\nP-value: 0.621\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a negative effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 3.42 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
     "section": "",
-    "text": "This page presents comprehensive analysis for the Bradford Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
     "crumbs": [
-      "CAZ Results",
-      "Bradford"
+      "DiD Analysis",
+      "Bristol"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Bradford_results.html#overview",
-    "href": "qmds_ghpages/03_results/Bradford_results.html#overview",
-    "title": "CAZ Results",
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Bristol’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#data-preparation-for-bristol",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#data-preparation-for-bristol",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Bristol",
+    "text": "Data Preparation for Bristol\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n20\n76.33\n3.82\n\n\nControl\nPost-CAZ\n36\n74.52\n3.10\n\n\nBristol\nPre-CAZ\n60\n58.55\n9.75\n\n\nBristol\nPost-CAZ\n108\n56.47\n9.37",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-17.463  -6.109  -1.055   5.990  18.354 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)     76.3261     1.8841  40.510  &lt; 2e-16 ***\ntreatment      -17.7719     2.1756  -8.169 2.43e-14 ***\npost            -1.8031     2.3499  -0.767    0.444    \ntreatment:post  -0.2762     2.7135  -0.102    0.919    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 8.426 on 220 degrees of freedom\nMultiple R-squared:  0.468, Adjusted R-squared:  0.4607 \nF-statistic: 64.51 on 3 and 220 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.276\n2.713\n-0.102\n0.919\n-5.624\n5.072\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-17.6754  -5.8663  -0.9256   6.0968  18.6323 \n\nCoefficients:\n                   Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)        75.98250    1.99866  38.017  &lt; 2e-16 ***\ntreatment         -17.77188    2.17923  -8.155 2.69e-14 ***\npost               -0.88876    2.93343  -0.303    0.762    \ntime_to_treatment  -0.03267    0.06255  -0.522    0.602    \ntreatment:post     -0.27621    2.71797  -0.102    0.919    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 8.44 on 219 degrees of freedom\nMultiple R-squared:  0.4686,    Adjusted R-squared:  0.4589 \nF-statistic: 48.29 on 4 and 219 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.276\n2.718\n-0.102\n0.919\n-5.633\n5.081\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-13.376  -6.552  -1.153   4.896  16.485 \n\nCoefficients:\n                  Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.729590   2.745639  28.674  &lt; 2e-16 ***\ntreatment       -17.771884   2.126288  -8.358 8.88e-15 ***\npost             -1.674262   2.302505  -0.727   0.4679    \nfactor(month)2   -6.346575   2.911540  -2.180   0.0304 *  \nfactor(month)3   -1.043960   2.911540  -0.359   0.7203    \nfactor(month)4   -5.315340   2.911540  -1.826   0.0693 .  \nfactor(month)5   -3.796040   2.767604  -1.372   0.1717    \nfactor(month)6   -3.243828   2.767604  -1.172   0.2425    \nfactor(month)7   -2.647009   2.767604  -0.956   0.3400    \nfactor(month)8   -6.491074   2.767604  -2.345   0.0199 *  \nfactor(month)9   -2.839135   2.767604  -1.026   0.3062    \nfactor(month)10   0.005534   2.767604   0.002   0.9984    \nfactor(month)11  -0.534778   2.767604  -0.193   0.8470    \nfactor(month)12   1.864693   2.767604   0.674   0.5012    \ntreatment:post   -0.276208   2.651947  -0.104   0.9171    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 8.235 on 209 degrees of freedom\nMultiple R-squared:  0.5173,    Adjusted R-squared:  0.4849 \nF-statistic:    16 on 14 and 209 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.276\n2.652\n-0.104\n0.917\n-5.504\n4.952",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n-0.276\n2.713\n-0.102\n0.919\n-5.624\n5.072\n\n\nWith Time Trend\n-0.276\n2.718\n-0.102\n0.919\n-5.633\n5.081\n\n\nWith Month FE\n-0.276\n2.652\n-0.104\n0.917\n-5.504\n4.952",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Bristol_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: -0.276 inhalers per 1,000 patients (95% CI: [-5.624, 5.072])\nP-value: 0.919\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a negative effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 0.28 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Bristol"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
     "section": "",
-    "text": "This page presents comprehensive analysis for the Bradford Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Bradford"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Bradford_results.html#part-1-prescription-trends",
-    "href": "qmds_ghpages/03_results/Bradford_results.html#part-1-prescription-trends",
-    "title": "CAZ Results",
-    "section": "Part 1: Prescription Trends",
-    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 18\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Bradford’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Bradford"
     ]
   },
   {
-    "objectID": "qmds_ghpages/03_results/Bradford_results.html#part-2-hospital-admissions-fingertips",
-    "href": "qmds_ghpages/03_results/Bradford_results.html#part-2-hospital-admissions-fingertips",
-    "title": "CAZ Results",
-    "section": "Part 2: Hospital Admissions (Fingertips)",
-    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
     "crumbs": [
-      "CAZ Results",
+      "DiD Analysis",
       "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#data-preparation-for-bradford",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#data-preparation-for-bradford",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Bradford",
+    "text": "Data Preparation for Bradford\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n20\n76.33\n3.82\n\n\nControl\nPost-CAZ\n36\n74.52\n3.10\n\n\nBradford\nPre-CAZ\n60\n80.06\n6.12\n\n\nBradford\nPost-CAZ\n108\n80.53\n5.04",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-13.3446  -3.1470   0.5743   3.2942  14.0137 \n\nCoefficients:\n               Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      76.326      1.122  68.022  &lt; 2e-16 ***\ntreatment         3.731      1.296   2.879  0.00438 ** \npost             -1.803      1.399  -1.288  0.19896    \ntreatment:post    2.273      1.616   1.406  0.16099    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 5.018 on 220 degrees of freedom\nMultiple R-squared:  0.1759,    Adjusted R-squared:  0.1647 \nF-statistic: 15.65 on 3 and 220 DF,  p-value: 2.909e-09\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.616\n1.406\n0.161\n-0.912\n5.458\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-13.3592  -2.9737   0.5297   3.1520  14.3194 \n\nCoefficients:\n                  Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)       75.98770    1.18899  63.909   &lt;2e-16 ***\ntreatment          3.73085    1.29641   2.878   0.0044 ** \npost              -0.90262    1.74509  -0.517   0.6055    \ntime_to_treatment -0.03217    0.03721  -0.865   0.3882    \ntreatment:post     2.27287    1.61691   1.406   0.1612    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 5.021 on 219 degrees of freedom\nMultiple R-squared:  0.1787,    Adjusted R-squared:  0.1637 \nF-statistic: 11.91 on 4 and 219 DF,  p-value: 8.928e-09\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.617\n1.406\n0.161\n-0.914\n5.46\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-11.444  -2.822   0.144   2.620   9.776 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.2099     1.4131  55.348  &lt; 2e-16 ***\ntreatment         3.7308     1.0943   3.409 0.000781 ***\npost             -1.5574     1.1850  -1.314 0.190209    \nfactor(month)2   -7.4716     1.4984  -4.986 1.29e-06 ***\nfactor(month)3   -0.5323     1.4984  -0.355 0.722784    \nfactor(month)4   -5.4291     1.4984  -3.623 0.000365 ***\nfactor(month)5   -3.4996     1.4244  -2.457 0.014827 *  \nfactor(month)6   -3.8464     1.4244  -2.700 0.007492 ** \nfactor(month)7   -1.9843     1.4244  -1.393 0.165064    \nfactor(month)8   -5.4349     1.4244  -3.816 0.000179 ***\nfactor(month)9   -0.5425     1.4244  -0.381 0.703659    \nfactor(month)10   1.1113     1.4244   0.780 0.436137    \nfactor(month)11  -0.2791     1.4244  -0.196 0.844841    \nfactor(month)12   2.3541     1.4244   1.653 0.099886 .  \ntreatment:post    2.2729     1.3648   1.665 0.097350 .  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 4.238 on 209 degrees of freedom\nMultiple R-squared:  0.4415,    Adjusted R-squared:  0.4041 \nF-statistic:  11.8 on 14 and 209 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n2.273\n1.365\n1.665\n0.097\n-0.418\n4.963",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n2.273\n1.616\n1.406\n0.161\n-0.912\n5.458\n\n\nWith Time Trend\n2.273\n1.617\n1.406\n0.161\n-0.914\n5.460\n\n\nWith Month FE\n2.273\n1.365\n1.665\n0.097\n-0.418\n4.963",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Bradford_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: 2.273 inhalers per 1,000 patients (95% CI: [-0.912, 5.458])\nP-value: 0.161\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a positive effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 2.27 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
+    "section": "",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of Birmingham’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#data-preparation-for-birmingham",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#data-preparation-for-birmingham",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for Birmingham",
+    "text": "Data Preparation for Birmingham\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n8\n76.53\n3.81\n\n\nControl\nPost-CAZ\n48\n74.94\n3.38\n\n\nBirmingham\nPre-CAZ\n24\n58.89\n11.70\n\n\nBirmingham\nPost-CAZ\n144\n57.33\n12.69",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-22.023  -7.494   2.911   8.454  17.709 \n\nCoefficients:\n                Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)     76.52802    3.90351  19.605  &lt; 2e-16 ***\ntreatment      -17.63419    4.50739  -3.912 0.000122 ***\npost            -1.58786    4.21627  -0.377 0.706831    \ntreatment:post   0.02084    4.86853   0.004 0.996589    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 11.04 on 220 degrees of freedom\nMultiple R-squared:  0.3282,    Adjusted R-squared:  0.319 \nF-statistic: 35.83 on 3 and 220 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n0.021\n4.869\n0.004\n0.997\n-9.574\n9.616\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-21.423  -7.546   2.782   8.455  17.730 \n\nCoefficients:\n                   Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)        76.33992    3.91638  19.492  &lt; 2e-16 ***\ntreatment         -17.63419    4.51228  -3.908 0.000124 ***\npost               -0.42451    4.51676  -0.094 0.925207    \ntime_to_treatment  -0.04157    0.05745  -0.723 0.470146    \ntreatment:post      0.02084    4.87381   0.004 0.996592    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 11.05 on 219 degrees of freedom\nMultiple R-squared:  0.3298,    Adjusted R-squared:  0.3176 \nF-statistic: 26.94 on 4 and 219 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n0.021\n4.874\n0.004\n0.997\n-9.585\n9.626\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-23.874  -6.768   2.915   8.211  15.986 \n\nCoefficients:\n                 Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.08864    4.90434  15.922  &lt; 2e-16 ***\ntreatment       -17.63419    4.53043  -3.892 0.000133 ***\npost             -1.16585    4.27550  -0.273 0.785367    \nfactor(month)2   -5.77605    3.92347  -1.472 0.142477    \nfactor(month)3   -0.98297    3.92347  -0.251 0.802420    \nfactor(month)4   -4.54758    3.92347  -1.159 0.247750    \nfactor(month)5   -2.61962    3.74789  -0.699 0.485355    \nfactor(month)6   -2.05488    3.74789  -0.548 0.584087    \nfactor(month)7   -2.59196    3.74789  -0.692 0.489970    \nfactor(month)8   -5.65390    3.74789  -1.509 0.132923    \nfactor(month)9    0.16233    3.74789   0.043 0.965495    \nfactor(month)10   0.11326    3.74789   0.030 0.975920    \nfactor(month)11  -0.86528    3.74789  -0.231 0.817640    \nfactor(month)12   1.02513    3.74789   0.274 0.784722    \ntreatment:post    0.02084    4.89343   0.004 0.996606    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 11.1 on 209 degrees of freedom\nMultiple R-squared:  0.3553,    Adjusted R-squared:  0.3121 \nF-statistic: 8.226 on 14 and 209 DF,  p-value: 5.939e-14\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n0.021\n4.893\n0.004\n0.997\n-9.626\n9.668",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n0.021\n4.869\n0.004\n0.997\n-9.574\n9.616\n\n\nWith Time Trend\n0.021\n4.874\n0.004\n0.997\n-9.585\n9.626\n\n\nWith Month FE\n0.021\n4.893\n0.004\n0.997\n-9.626\n9.668",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/Birmingham_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: 0.021 inhalers per 1,000 patients (95% CI: [-9.574, 9.616])\nP-value: 0.997\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a positive effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 0.02 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Birmingham"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html",
+    "title": "Difference-in-Differences Analysis",
+    "section": "",
+    "text": "Warning\n\n\n\nThese are preliminary results and the analysis is still in progress.",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#overview",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#overview",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Overview",
+    "text": "Overview\nThis document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of BANES’s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#setup",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#setup",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Setup",
+    "text": "Setup\n\n\nShow the code\nlibrary(tidyverse)\nlibrary(here)\nlibrary(broom)\nlibrary(sf)\nlibrary(knitr)\nlibrary(kableExtra)\n\n\n\n\nShow the code\nload(file.path(here(), \"data_raw/trends_data.rda\"))\n\nCAZ_lst &lt;- read_csv(\n  file.path(here(), \"data_raw/CAZ_list.csv\"),\n  show_col_types = FALSE\n)",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#data-preparation-for-banes",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#data-preparation-for-banes",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Data Preparation for BANES",
+    "text": "Data Preparation for BANES\n\n\nShow the code\n# Get CAZ start date\ncaz_start_year &lt;- CAZ_lst |&gt;\n  filter(CAZ == params$current_caz) |&gt;\n  pull(Start)\n\ncaz_start &lt;- as.Date(paste0(caz_start_year, \"-01-01\"))\n\n# Filter CAZ practices\ncaz_saba &lt;- CAZ_SABA |&gt;\n  left_join(\n    CAZ_practices |&gt;\n      st_drop_geometry() |&gt;\n      select(code, location_class, CAZ_name),\n    by = c(\"org_id\" = \"code\")\n  ) |&gt;\n  filter(CAZ_name == params$current_caz)\n\n# Aggregate CAZ data\ncaz_agg &lt;- caz_saba |&gt;\n  filter(str_detect(location_class, \"within\")) |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(location_class, date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 1\n  )\n\n# Aggregate control data\ncontrol_agg &lt;- noCAZ_SABA |&gt;\n  summarise(\n    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),\n    total_numerator = sum(numerator, na.rm = TRUE),\n    total_denominator = sum(denominator, na.rm = TRUE),\n    .by = c(date, month, year)\n  ) |&gt;\n  filter(total_patients &gt; 0) |&gt;\n  mutate(\n    inhalers_per_1000 = (total_denominator / total_patients) * 1000,\n    treatment = 0,\n    location_class = \"Control\"\n  )\n\n# Combine treatment and control\ndid_data &lt;- bind_rows(\n  caz_agg,\n  control_agg\n) |&gt;\n  mutate(\n    post = as.integer(date &gt;= caz_start),\n    time_to_treatment = as.numeric(difftime(date, caz_start, units = \"days\")) /\n      30.44 # Convert to months\n  ) |&gt;\n  filter(\n    !is.na(inhalers_per_1000),\n    is.finite(inhalers_per_1000)\n  ) |&gt;\n  arrange(date, treatment)",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#summary-statistics",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#summary-statistics",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Summary Statistics",
+    "text": "Summary Statistics\n\n\nShow the code\ndid_summary &lt;- did_data |&gt;\n  group_by(treatment, post) |&gt;\n  summarise(\n    n_obs = n(),\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    period = ifelse(post == 0, \"Pre-CAZ\", \"Post-CAZ\"),\n    group = ifelse(treatment == 1, params$current_caz, \"Control\")\n  )\n\nkable(\n  did_summary |&gt;\n    select(group, period, n_obs, mean_inhalers, sd_inhalers),\n  digits = 2,\n  col.names = c(\"Group\", \"Period\", \"N Obs\", \"Mean Inhalers/1000\", \"SD\"),\n  caption = \"Summary Statistics by Treatment and Period\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nSummary Statistics by Treatment and Period\n\n\nGroup\nPeriod\nN Obs\nMean Inhalers/1000\nSD\n\n\n\n\nControl\nPre-CAZ\n8\n76.53\n3.81\n\n\nControl\nPost-CAZ\n48\n74.94\n3.38\n\n\nBANES\nPre-CAZ\n24\n54.00\n5.87\n\n\nBANES\nPost-CAZ\n144\n52.41\n5.05",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#parallel-trends-visualization",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#parallel-trends-visualization",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Parallel Trends Visualization",
+    "text": "Parallel Trends Visualization\n\n\nShow the code\nplot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  )\n\nggplot(\n  plot_data,\n  aes(x = date, y = mean_inhalers, color = group, linetype = group)\n) +\n  geom_line(linewidth = 1) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(plot_data$mean_inhalers, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    color = \"red\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(\n    legend.position = \"bottom\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  labs(\n    title = paste(\n      \"Total Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\",\n    color = \"Group\",\n    linetype = \"Group\"\n  ) +\n  scale_color_manual(\n    values = c(\"CAZ\" = \"#E69F00\", \"Control\" = \"#0072B2\")\n  )\n\n\n\n\n\n\n\n\nFigure 1",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#difference-plot",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#difference-plot",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference Plot",
+    "text": "Difference Plot\nDifference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.\n\n\nShow the code\ndiff_plot_data &lt;- did_data |&gt;\n  group_by(date, treatment) |&gt;\n  summarise(\n    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),\n    .groups = \"drop\"\n  ) |&gt;\n  mutate(\n    group = ifelse(treatment == 1, \"CAZ\", \"Control\")\n  ) |&gt;\n  select(-treatment) |&gt;\n  pivot_wider(names_from = group, values_from = mean_inhalers) |&gt;\n  mutate(\n    caz_rm = zoo::rollmean(\n      get(\"CAZ\"),\n      k = 12,\n      fill = NA,\n      align = \"right\"\n    ),\n    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = \"right\")\n  ) |&gt;\n  mutate(\n    difference_rm = caz_rm - control_rm,\n    difference = get(\"CAZ\") - Control\n  )\n\nggplot(diff_plot_data, aes(x = date)) +\n  geom_line(\n    aes(y = difference, color = \"Monthly Difference\"),\n    linewidth = 0.5\n  ) +\n  geom_line(\n    aes(y = difference_rm, color = \"12-month Rolling Average\"),\n    linewidth = 1\n  ) +\n  geom_vline(\n    xintercept = caz_start,\n    linetype = \"dashed\",\n    color = \"red\",\n    linewidth = 0.8\n  ) +\n  annotate(\n    \"text\",\n    x = caz_start,\n    y = max(diff_plot_data$difference, na.rm = TRUE),\n    label = \"CAZ Implementation\",\n    vjust = -0.5,\n    hjust = -0.1,\n    color = \"red\"\n  ) +\n  labs(\n    title = paste(\n      \"Difference in Inhaler Prescriptions:\",\n      \"CAZ\",\n      \"vs Control\"\n    ),\n    subtitle = \"Per 1,000 registered patients\",\n    x = \"Date\",\n    y = \"Inhalers per 1,000 patients\"\n  ) +\n  theme_minimal(base_size = 12) +\n  scale_y_continuous(expand = 0.2) +\n  theme(\n    legend.position = \"top\",\n    plot.title = element_text(face = \"bold\")\n  ) +\n  scale_color_manual(\n    values = c(\n      \"Monthly Difference\" = \"#888888\",\n      \"12-month Rolling Average\" = \"black\"\n    ),\n    name = \"\"\n  )\n\n\n\n\n\n\n\n\nFigure 2",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#difference-in-differences-models",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#difference-in-differences-models",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Difference-in-Differences Models",
+    "text": "Difference-in-Differences Models\n\nBasic DiD Model\n\n\nShow the code\ndid_model_basic &lt;- lm(\n  inhalers_per_1000 ~ treatment * post,\n  data = did_data\n)\n\nsummary(did_model_basic)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-12.1701  -3.6003   0.0896   3.3939  10.9391 \n\nCoefficients:\n                 Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)     76.528023   1.697973  45.070   &lt;2e-16 ***\ntreatment      -22.526605   1.960651 -11.489   &lt;2e-16 ***\npost            -1.587862   1.834021  -0.866    0.388    \ntreatment:post  -0.008296   2.117745  -0.004    0.997    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 4.803 on 220 degrees of freedom\nMultiple R-squared:  0.8083,    Adjusted R-squared:  0.8057 \nF-statistic: 309.2 on 3 and 220 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_basic &lt;- tidy(did_model_basic, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_basic,\n  digits = 3,\n  caption = \"DiD Estimate (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.008\n2.118\n-0.004\n0.997\n-4.182\n4.165\n\n\n\n\n\n\n\nDiD with Time Trends\n\n\nShow the code\ndid_model_trends &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + time_to_treatment,\n  data = did_data\n)\n\nsummary(did_model_trends)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment, \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-12.8793  -2.9352   0.0695   3.2530  10.7593 \n\nCoefficients:\n                    Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)        76.221002   1.676731  45.458   &lt;2e-16 ***\ntreatment         -22.526605   1.931852 -11.661   &lt;2e-16 ***\npost                0.311007   1.933770   0.161   0.8724    \ntime_to_treatment  -0.067846   0.024597  -2.758   0.0063 ** \ntreatment:post     -0.008296   2.086638  -0.004   0.9968    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 4.732 on 219 degrees of freedom\nMultiple R-squared:  0.8147,    Adjusted R-squared:  0.8114 \nF-statistic: 240.8 on 4 and 219 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_trends &lt;- tidy(did_model_trends, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_trends,\n  digits = 3,\n  caption = \"DiD Estimate with Time Trends (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Time Trends (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.008\n2.087\n-0.004\n0.997\n-4.121\n4.104\n\n\n\n\n\n\n\nDiD with Month Fixed Effects\n\n\nShow the code\ndid_model_month &lt;- lm(\n  inhalers_per_1000 ~ treatment * post + factor(month),\n  data = did_data\n)\n\nsummary(did_model_month)\n\n\n\nCall:\nlm(formula = inhalers_per_1000 ~ treatment * post + factor(month), \n    data = did_data)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-11.7798  -2.8792  -0.2648   3.0835  10.6323 \n\nCoefficients:\n                  Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)      78.472277   1.873699  41.881  &lt; 2e-16 ***\ntreatment       -22.526605   1.730849 -13.015  &lt; 2e-16 ***\npost             -1.234301   1.633453  -0.756  0.45072    \nfactor(month)2   -6.108680   1.498960  -4.075 6.53e-05 ***\nfactor(month)3   -1.462914   1.498960  -0.976  0.33022    \nfactor(month)4   -4.448155   1.498960  -2.967  0.00335 ** \nfactor(month)5   -3.794226   1.431879  -2.650  0.00867 ** \nfactor(month)6   -2.606609   1.431879  -1.820  0.07013 .  \nfactor(month)7   -1.505737   1.431879  -1.052  0.29421    \nfactor(month)8   -6.665962   1.431879  -4.655 5.74e-06 ***\nfactor(month)9   -1.991018   1.431879  -1.390  0.16586    \nfactor(month)10  -0.021170   1.431879  -0.015  0.98822    \nfactor(month)11  -0.673824   1.431879  -0.471  0.63843    \nfactor(month)12   1.704512   1.431879   1.190  0.23524    \ntreatment:post   -0.008296   1.869531  -0.004  0.99646    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 4.24 on 209 degrees of freedom\nMultiple R-squared:  0.8581,    Adjusted R-squared:  0.8486 \nF-statistic: 90.26 on 14 and 209 DF,  p-value: &lt; 2.2e-16\n\n\nShow the code\ndid_coef_month &lt;- tidy(did_model_month, conf.int = TRUE) |&gt;\n  filter(term == \"treatment:post\")\n\nkable(\n  did_coef_month,\n  digits = 3,\n  caption = \"DiD Estimate with Month Fixed Effects (Treatment × Post interaction)\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nDiD Estimate with Month Fixed Effects (Treatment × Post interaction)\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\ntreatment:post\n-0.008\n1.87\n-0.004\n0.996\n-3.694\n3.677",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#comparison-across-specifications",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#comparison-across-specifications",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Comparison Across Specifications",
+    "text": "Comparison Across Specifications\n\n\nShow the code\ncomparison &lt;- bind_rows(\n  did_coef_basic |&gt; mutate(model = \"Basic DiD\"),\n  did_coef_trends |&gt; mutate(model = \"With Time Trend\"),\n  did_coef_month |&gt; mutate(model = \"With Month FE\")\n) |&gt;\n  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)\n\nkable(\n  comparison,\n  digits = 3,\n  caption = \"Comparison of DiD Estimates Across Specifications\"\n) |&gt;\n  kable_styling(bootstrap_options = c(\"striped\", \"hover\"))\n\n\n\nComparison of DiD Estimates Across Specifications\n\n\nmodel\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nBasic DiD\n-0.008\n2.118\n-0.004\n0.997\n-4.182\n4.165\n\n\nWith Time Trend\n-0.008\n2.087\n-0.004\n0.997\n-4.121\n4.104\n\n\nWith Month FE\n-0.008\n1.870\n-0.004\n0.996\n-3.694\n3.677",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/BANES_DiD_analysis.html#interpretation",
+    "href": "qmds_ghpages/03_results/BANES_DiD_analysis.html#interpretation",
+    "title": "Difference-in-Differences Analysis",
+    "section": "Interpretation",
+    "text": "Interpretation\nDiD Estimate: -0.008 inhalers per 1,000 patients (95% CI: [-4.182, 4.165])\nP-value: 0.997\nStatistical Significance: Not statistically significant at 5% level\n\nKey Findings\n\nDirection: The estimate indicates a negative effect on inhaler prescriptions\nMagnitude: The CAZ is associated with a change of approximately 0.01 inhalers per 1,000 patients\nRobustness: The estimate is stable across different model specifications\n\n\nResults produced on: 2026-02-05",
+    "crumbs": [
+      "DiD Analysis",
+      "Bath and North East Somerset"
     ]
   },
   {
@@ -516,6 +1224,50 @@
     ]
   },
   {
+    "objectID": "qmds_ghpages/03_results/Bradford_results.html",
+    "href": "qmds_ghpages/03_results/Bradford_results.html",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Bradford Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_results.html#overview",
+    "href": "qmds_ghpages/03_results/Bradford_results.html#overview",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Bradford Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_results.html#part-1-prescription-trends",
+    "href": "qmds_ghpages/03_results/Bradford_results.html#part-1-prescription-trends",
+    "title": "CAZ Results",
+    "section": "Part 1: Prescription Trends",
+    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 18\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "crumbs": [
+      "CAZ Results",
+      "Bradford"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Bradford_results.html#part-2-hospital-admissions-fingertips",
+    "href": "qmds_ghpages/03_results/Bradford_results.html#part-2-hospital-admissions-fingertips",
+    "title": "CAZ Results",
+    "section": "Part 2: Hospital Admissions (Fingertips)",
+    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "crumbs": [
+      "CAZ Results",
+      "Bradford"
+    ]
+  },
+  {
     "objectID": "qmds_ghpages/03_results/Bristol_results.html",
     "href": "qmds_ghpages/03_results/Bristol_results.html",
     "title": "CAZ Results",
@@ -560,6 +1312,50 @@
     ]
   },
   {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Newcastle upon Tyne Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#overview",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#overview",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Newcastle upon Tyne Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-1-prescription-trends",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-1-prescription-trends",
+    "title": "CAZ Results",
+    "section": "Part 1: Prescription Trends",
+    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "crumbs": [
+      "CAZ Results",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-2-hospital-admissions-fingertips",
+    "href": "qmds_ghpages/03_results/Newcastle_upon_Tyne_results.html#part-2-hospital-admissions-fingertips",
+    "title": "CAZ Results",
+    "section": "Part 2: Hospital Admissions (Fingertips)",
+    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "crumbs": [
+      "CAZ Results",
+      "Newcastle upon Tyne"
+    ]
+  },
+  {
     "objectID": "qmds_ghpages/03_results/Portsmouth_results.html",
     "href": "qmds_ghpages/03_results/Portsmouth_results.html",
     "title": "CAZ Results",
@@ -601,6 +1397,50 @@
     "crumbs": [
       "CAZ Results",
       "Portsmouth"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_results.html",
+    "href": "qmds_ghpages/03_results/Sheffield_results.html",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Sheffield Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#overview",
+    "href": "qmds_ghpages/03_results/Sheffield_results.html#overview",
+    "title": "CAZ Results",
+    "section": "",
+    "text": "This page presents comprehensive analysis for the Sheffield Clean Air Zone, including prescription trends and hospital admissions data. The analysis examines changes before and after CAZ implementation (2023), comparing practices and districts within and around the CAZ boundaries to control groups.",
+    "crumbs": [
+      "CAZ Results",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#part-1-prescription-trends",
+    "href": "qmds_ghpages/03_results/Sheffield_results.html#part-1-prescription-trends",
+    "title": "CAZ Results",
+    "section": "Part 1: Prescription Trends",
+    "text": "Part 1: Prescription Trends\n\nIntroduction\nThis section presents prescription patterns for key respiratory medications, examining whether air quality improvements in the CAZ are associated with changes in medication use.\n\n\nSABA Analysis\n\nSABA Ratio\nComparing the ratio of SABA inhalers to all respiratory inhalers. Lower ratios may indicate improved asthma control with better use of preventative medications.\n\n\n\nSABA Ratio Trend\n\n\n\n\nSABA Numerator (per patient)\nPrescription rates of SABA inhalers per registered patient.\n\n\n\nSABA Numerator Trend\n\n\n\n\nSABA Denominator (all inhalers per patient)\nOverall inhaler prescription rates as a baseline metric.\n\n\n\nSABA Denominator Trend\n\n\n\n\n\nMontelukast Analysis\nPrescription trends for Montelukast (BNF code 0303020G0), a leukotriene receptor antagonist used in asthma management.\n\n\n\nMontelukast Trend\n\n\n\n\nAntidepressants Analysis\nPrescription trends for Antidepressants (BNF code 0403).\n\n\n\nAntidepressants Trend\n\n\n\n\nAnxiolytics Analysis\nPrescription trends for Anxiolytics (BNF code 040102).\n\n\n\nAnxiolytics Trend\n\n\n\n\nMethylprednisolone Analysis\nPrescription trends for Methylprednisolone (BNF code 0603020S0), an oral corticosteroid used in respiratory and inflammatory conditions.\n\n\n\nMethylprednisolone Trend\n\n\n\n\nMain BNF Codes Analysis\nPrescription trends across all main BNF medication categories.\n\nShow the code\ncodes_tmp &lt;- list.files(\n  pattern = paste0(params$current_caz, \"_\\\\d{2}.png$\"),\n  path = \"qmds_ghpages/figures/\"\n)\n\nfor (code in codes_tmp) {\n  capt = stringr::str_extract(code, \"\\\\d{2}\")\n\n  cat(\"#### BNF Code \", capt, \"\\n\\n\", sep = \"\")\n  cat(\"![](../figures/\", code, \")\\n\\n\", sep = \"\")\n}\n\n\nBNF Code 01\n\n\n\nBNF Code 02\n\n\n\nBNF Code 03\n\n\n\nBNF Code 04\n\n\n\nBNF Code 05\n\n\n\nBNF Code 06\n\n\n\nBNF Code 07\n\n\n\nBNF Code 08\n\n\n\nBNF Code 09\n\n\n\nBNF Code 10\n\n\n\nBNF Code 11\n\n\n\nBNF Code 12\n\n\n\nBNF Code 13\n\n\n\nBNF Code 14\n\n\n\nBNF Code 15\n\n\n\nBNF Code 19\n\n\n\nBNF Code 20\n\n\n\nBNF Code 21\n\n\n\nBNF Code 22\n\n\n\nBNF Code 23",
+    "crumbs": [
+      "CAZ Results",
+      "Sheffield"
+    ]
+  },
+  {
+    "objectID": "qmds_ghpages/03_results/Sheffield_results.html#part-2-hospital-admissions-fingertips",
+    "href": "qmds_ghpages/03_results/Sheffield_results.html#part-2-hospital-admissions-fingertips",
+    "title": "CAZ Results",
+    "section": "Part 2: Hospital Admissions (Fingertips)",
+    "text": "Part 2: Hospital Admissions (Fingertips)\n\nHospital Admissions Over Time\nWe plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.",
+    "crumbs": [
+      "CAZ Results",
+      "Sheffield"
     ]
   },
   {

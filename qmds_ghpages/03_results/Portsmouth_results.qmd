@@ -84,12 +84,29 @@ for (code in codes_tmp) {
 
 ---
 
-## Part 2: Hospital Admissions (Fingertips)
+## Part 2: Health Indicators (Fingertips)
 
+We examine health indicators from NHS Digital's Fingertips platform, comparing `{r} params$current_caz` against a national control group of non-CAZ districts.
 
-### Hospital Admissions Over Time
+::: {.panel-tabset}
 
-We plot hospital admissions for under-19-year-olds in Sheffield, grouped by age. The plot includes a control line representing trends in non-CAZ districts for comparison.
+### Asthma Admissions (Under 19)
+
+We plot emergency hospital admissions for asthma for under-19-year-olds in `{r} params$current_caz`, grouped by age. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
 
 ![](../figures/admissions_`{r} params$current_caz`.png)
+
+### Stroke Admissions
+
+We plot emergency hospital admissions due to stroke for all ages in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_90986_`{r} gsub(" ", "_", params$current_caz)`.png)
+
+### Stroke Prevalence (QOF)
+
+We plot the recorded QOF prevalence percentage of stroke (all ages) in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_212_`{r} gsub(" ", "_", params$current_caz)`.png)
+
+:::
 

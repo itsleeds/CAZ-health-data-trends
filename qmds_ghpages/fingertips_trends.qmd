@@ -32,7 +32,6 @@ pkgs <- c(
 
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
-
 ```
 
 ## Loading data
@@ -43,7 +42,7 @@ We use hospital admissions data sourced from the Fingertips platform, which prov
 
 ```{r}
 admissions_data <- read_csv(
-  "data_raw/hospital_admissions.csv",
+  "data_raw/fingertips_data.csv",
   col_types = cols(
     IndicatorID = col_double(),
     IndicatorName = col_character(),
@@ -138,138 +137,323 @@ tm_shape(CAZ_la_boundaries) +
 The admissions data is filtered to include only records from districts with CAZ coverage. This step ensures that our health trend analysis is specific to the population impacted by CAZ policies.
 
 ```{r}
+# Select the indicators we want to plot
+sel_indicators <- c(90810, 90986, 212)
+
+# Create a robust lookup mapping for ONS Area Codes to human-readable CAZ names
+caz_lookup <- tibble(
+  AreaCode = c("E06000022", "E08000025", "E08000032", "E06000023", "E08000021", "E06000044", "E08000019"),
+  CAZName = c("BANES", "Birmingham", "Bradford", "Bristol", "Newcastle upon Tyne", "Portsmouth", "Sheffield")
+)
+
+# Join the admissions data with our lookup table
 CAZ_admissions <- admissions_data |>
-  filter(
-    AreaCode %in% c(CAZ_la_boundaries$LAD25CD, "E08000019"),
-    AreaCode != "E08000037"
-  )
+  filter(IndicatorID %in% sel_indicators) |>
+  inner_join(caz_lookup, by = "AreaCode")
 ```
 
 ## Visualising Trends
 
-### Hospital Admissions Over Time
+### National Control Baseline & Value Normalisation
 
-We plot hospital admissions for under-19-year-olds across CAZ districts, grouped by age and area. The interactive plot allows exploration of temporal trends and comparisons between districts, supporting further investigation into the impact of CAZ interventions on health outcomes.
+To compare the CAZ districts against a national trend, we calculate the control group metrics using data from non-CAZ and non-London local authorities. 
+
+Since the selected indicators represent different metrics (emergency hospital admissions per 100,000 for asthma/stroke, vs GP register prevalence percentage for stroke), we dynamically calculate the appropriate multiplier for each indicator from the raw data. This avoids scaling mismatches when drawing control lines.
 
 ```{r}
+#| label: control-group-prep
+#| warning: false
+#| message: false
+
+# Define London codes to exclude from the control group
 london_codes <- c(
-  "E09000006",
-  "E09000023",
-  "E09000022",
-  "E09000008",
-  "E09000011",
-  "E09000016",
-  "E09000007",
-  "E09000029",
-  "E09000024",
-  "E09000004",
-  "E09000030",
-  "E09000001",
-  "E09000012",
-  "E09000031",
-  "E09000026",
-  "E09000025",
-  "E09000010",
-  "E09000019",
-  "E09000033",
-  "E09000003",
-  "E09000005",
-  "E09000009",
-  "E09000015",
-  "E09000017",
-  "E09000002",
-  "E09000021",
-  "E09000027"
+  "E09000006", "E09000023", "E09000022", "E09000008", "E09000011",
+  "E09000016", "E09000007", "E09000029", "E09000024", "E09000004",
+  "E09000030", "E09000001", "E09000012", "E09000031", "E09000026",
+  "E09000025", "E09000010", "E09000019", "E09000033", "E09000003",
+  "E09000005", "E09000009", "E09000015", "E09000017", "E09000002",
+  "E09000021", "E09000027"
 )
 
+# Calculate the appropriate multiplier for each indicator dynamically based on the median ratio
+# of Value to (Count / Denominator) in the non-zero raw data
+indicator_multipliers <- admissions_data |>
+  filter(!is.na(Value), !is.na(Count), !is.na(Denominator), Denominator > 0, Count > 0) |>
+  mutate(ratio = Value / (Count / Denominator)) |>
+  summarise(
+    multiplier = 10^round(log10(median(ratio))),
+    .by = IndicatorID
+  )
 
+# Calculate control group trends per indicator, time period, and age group using the correct multipliers
 admissions_control <- admissions_data |>
   filter(
+    IndicatorID %in% sel_indicators,
     !(AreaCode %in% CAZ_la_boundaries$LAD25CD),
-    !((AreaCode %in% london_codes))
+    !(AreaCode %in% london_codes),
+    Sex == "Persons"
   ) |>
-  filter(Sex == "Persons") |>
   summarise(
-    across(c(Count, Denominator), \(x) sum(x, na.rm = T)),
-    .by = c(TimeperiodSortable, Age)
+    across(c(Count, Denominator), \(x) sum(x, na.rm = TRUE)),
+    .by = c(IndicatorID, TimeperiodSortable, Age)
   ) |>
-  mutate(Value = (1e5 * Count) / Denominator, AreaName = "Control")
+  left_join(indicator_multipliers, by = "IndicatorID") |>
+  mutate(Value = (multiplier * Count) / Denominator, AreaName = "Control") |>
+  select(-multiplier)
+
+# Create a lookup vector mapping TimeperiodSortable back to readable financial year strings
+timeperiod_labels <- admissions_data |>
+  select(TimeperiodSortable, Timeperiod) |>
+  distinct() |>
+  deframe()
 ```
 
+### Interactive Trends by Indicator
+
+We plot the trends for each of the selected indicators across all CAZ districts, grouped by age and area. The plots include a dashed black control line representing trends in non-CAZ districts for comparison.
+
+::: {.panel-tabset}
+
+#### Asthma Admissions (Under 19)
+
+**Indicator ID:** 90810 — Hospital admissions for asthma (under 19 years)
+
+This indicator shows the rate of emergency hospital admissions for asthma in children and young people under 19 years of age, expressed per 100,000 population.
 
 ```{r}
-admissions_plot <- CAZ_admissions |>
-  filter(Sex == "Persons") |>
-  ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +
-  geom_line(data = admissions_control, col = "black", linetype = "dashed") +
+#| label: plot-asthma-admissions
+#| warning: false
+#| message: false
+
+df_plot_asthma <- CAZ_admissions |> filter(IndicatorID == 90810, Sex == "Persons")
+breaks_asthma <- sort(unique(df_plot_asthma$TimeperiodSortable))
+
+p_asthma <- df_plot_asthma |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 90810),
+    col = "black",
+    linetype = "dashed"
+  ) +
   geom_line() +
-  scale_x_continuous(breaks = unique(CAZ_admissions$TimeperiodSortable)) +
+  scale_x_continuous(
+    breaks = breaks_asthma,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
   facet_grid(Age ~ ., scales = "free_y") +
   theme_light() +
   scale_color_discrete(type = "qual", palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   labs(
-    title = "Hospital Admissions for Under 19-years-olds",
+    title = "Hospital Admissions for Asthma (under 19 years)",
     y = "per 100,000",
     x = NULL
   )
 
-ggplotly(admissions_plot)
+ggplotly(p_asthma)
 ```
 
+#### Stroke Admissions
+
+**Indicator ID:** 90986 — Hospital admissions due to stroke
+
+This indicator shows the rate of hospital admissions due to stroke for all ages, expressed per 100,000 population.
 
 ```{r}
+#| label: plot-stroke-admissions
+#| warning: false
+#| message: false
+
+df_plot_stroke <- CAZ_admissions |> filter(IndicatorID == 90986, Sex == "Persons")
+breaks_stroke <- sort(unique(df_plot_stroke$TimeperiodSortable))
+
+p_stroke <- df_plot_stroke |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 90986),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_stroke,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Hospital Admissions due to Stroke",
+    y = "per 100,000",
+    x = NULL
+  )
+
+ggplotly(p_stroke)
+```
+
+#### Stroke Prevalence (QOF)
+
+**Indicator ID:** 212 — Stroke: QOF prevalence
+
+This indicator shows the percentage of patients on the GP register with a diagnosis of stroke or TIA (Quality and Outcomes Framework), representing overall prevalence in the population.
+
+```{r}
+#| label: plot-stroke-prevalence
+#| warning: false
+#| message: false
+
+df_plot_prev <- CAZ_admissions |> filter(IndicatorID == 212, Sex == "Persons")
+breaks_prev <- sort(unique(df_plot_prev$TimeperiodSortable))
+
+p_prev <- df_plot_prev |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 212),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_prev,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Stroke: QOF Prevalence",
+    y = "Prevalence (%)",
+    x = NULL
+  )
+
+ggplotly(p_prev)
+```
+
+:::
+
+### Data Table
+
+```{r}
+#| label: data-table
+#| warning: false
+
 CAZ_admissions |>
   filter(Sex == "Persons") |>
   knitr::kable(format = "html") |>
   kable_paper() |>
-  scroll_box(width = "100%", height = "5%")
+  scroll_box(width = "100%", height = "500px")
 ```
 
-Producing individual plots for each CAZ
+### Exporting Plots for Individual CAZ Report Pages
+
+To support the individual Clean Air Zone report pages (which render static PNG plots for comparison), we save plots for each CAZ. 
+
+1. `admissions_<caz_name>.png` - Static plot for the primary indicator (90810: Asthma admissions under 19 years), as expected by the results templates.
+2. `admissions_<ind>_<caz_name>.png` - Static plots for each individual indicator and CAZ.
 
 ```{r}
-names_correspondence <- bind_cols(
-  caz_boundaries |>
-    st_drop_geometry() |>
-    arrange(name) |>
-    select(name),
-  CAZ_admissions |>
-    select(AreaName) |>
-    unique() |>
-    arrange(AreaName)
-)
+#| label: export-plots
+#| warning: false
+#| message: false
 
-for (i in 1:nrow(names_correspondence)) {
-  caz_name <- names_correspondence$name[i]
-  area_name <- names_correspondence$AreaName[i]
+# Ensure the figures directory exists
+dir.create("qmds_ghpages/figures", showWarnings = FALSE, recursive = TRUE)
 
-  admissions_tmp <- CAZ_admissions |>
-    filter(AreaName == area_name, Sex == "Persons") |>
-    ggplot(aes(x = TimeperiodSortable, y = Value, col = AreaName)) +
-    geom_line(data = admissions_control, col = "black", linetype = "dashed") +
-    geom_line() +
-    scale_x_continuous(breaks = unique(CAZ_admissions$TimeperiodSortable)) +
+# Loop over each CAZ to save individual plots
+for (caz_row in seq_len(nrow(caz_lookup))) {
+  caz_code <- caz_lookup$AreaCode[caz_row]
+  caz_name <- caz_lookup$CAZName[caz_row]
+  
+  # 1. Save the primary indicator plot (90810) as admissions_<caz_name>.png for the results pages
+  ind_primary <- 90810
+  ind_name_primary <- admissions_data |>
+    filter(IndicatorID == ind_primary) |>
+    pull(IndicatorName) |>
+    unique()
+  
+  df_plot_prim_caz <- CAZ_admissions |> 
+    filter(IndicatorID == ind_primary, AreaCode == caz_code, Sex == "Persons")
+  breaks_prim_caz <- sort(unique(df_plot_prim_caz$TimeperiodSortable))
+  
+  p_primary <- df_plot_prim_caz |>
+    ggplot(aes(x = TimeperiodSortable, y = Value)) +
+    geom_line(
+      data = admissions_control |> filter(IndicatorID == ind_primary),
+      col = "black",
+      linetype = "dashed"
+    ) +
+    geom_line(aes(col = CAZName)) +
+    scale_x_continuous(
+      breaks = breaks_prim_caz,
+      labels = \(x) timeperiod_labels[as.character(x)]
+    ) +
     facet_grid(Age ~ ., scales = "free_y") +
     theme_light() +
-    guides(col = "none") +
     scale_color_discrete(type = "qual", palette = "Dark2") +
-    theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    guides(col = "none") +
     labs(
-      title = "Hospital Admissions for Under 19-years-olds",
-      subtitle = caz_name,
+      title = paste0(ind_name_primary, " — ", caz_name),
       y = "per 100,000",
       x = NULL
     )
-
+  
   ggsave(
     filename = paste0("qmds_ghpages/figures/admissions_", caz_name, ".png"),
-    plot = admissions_tmp,
+    plot = p_primary,
     width = 15,
     height = 10,
     dpi = 300,
     units = "cm"
   )
+  
+  # 2. Save individual plots for all indicators (including 90810, 90986, 212)
+  for (ind in sel_indicators) {
+    ind_name <- admissions_data |>
+      filter(IndicatorID == ind) |>
+      pull(IndicatorName) |>
+      unique()
+    
+    y_label <- ifelse(ind == 212, "Prevalence (%)", "per 100,000")
+    
+    df_plot_ind_caz <- CAZ_admissions |> 
+      filter(IndicatorID == ind, AreaCode == caz_code, Sex == "Persons")
+    breaks_ind_caz <- sort(unique(df_plot_ind_caz$TimeperiodSortable))
+    
+    p_ind <- df_plot_ind_caz |>
+      ggplot(aes(x = TimeperiodSortable, y = Value)) +
+      geom_line(
+        data = admissions_control |> filter(IndicatorID == ind),
+        col = "black",
+        linetype = "dashed"
+      ) +
+      geom_line(aes(col = CAZName)) +
+      scale_x_continuous(
+        breaks = breaks_ind_caz,
+        labels = \(x) timeperiod_labels[as.character(x)]
+      ) +
+      facet_grid(Age ~ ., scales = "free_y") +
+      theme_light() +
+      scale_color_discrete(type = "qual", palette = "Dark2") +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+      guides(col = "none") +
+      labs(
+        title = paste0(ind_name, " — ", caz_name),
+        y = y_label,
+        x = NULL
+      )
+    
+    caz_filename_clean <- gsub(" ", "_", caz_name)
+    ggsave(
+      filename = paste0("qmds_ghpages/figures/admissions_", ind, "_", caz_filename_clean, ".png"),
+      plot = p_ind,
+      width = 15,
+      height = 10,
+      dpi = 300,
+      units = "cm"
+    )
+  }
 }
-
 ```

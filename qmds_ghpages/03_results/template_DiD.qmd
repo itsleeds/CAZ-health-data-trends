@@ -1,0 +1,393 @@
+---
+title: "Difference-in-Differences Analysis"
+params:
+  current_caz: "Bradford"
+format: html
+execute:
+  warning: false
+  message: false
+---
+
+:::{.callout-warning}
+These are preliminary results and the analysis is still in progress.
+:::
+
+## Overview
+
+This document implements a Difference-in-Differences (DiD) analysis to estimate the causal effect of **`{r} params$current_caz`**'s Clean Air Zone (CAZ) implementation on total inhaler prescriptions (SABA denominator). The DiD approach compares changes in prescription rates before and after CAZ implementation in areas within 10 km of the CAZ (treatment group) relative to changes in control areas (practices in Major Towns and cities outside any CAZ excluding London).
+
+## Setup
+
+```{r}
+#| label: packages
+
+library(tidyverse)
+library(here)
+library(broom)
+library(sf)
+library(knitr)
+library(kableExtra)
+
+
+```
+
+```{r}
+#| label: load-data
+
+load(file.path(here(), "data_raw/trends_data.rda"))
+
+CAZ_lst <- read_csv(
+  file.path(here(), "data_raw/CAZ_list.csv"),
+  show_col_types = FALSE
+)
+```
+
+## Data Preparation for `{r} params$current_caz`
+
+```{r}
+#| label: prep-data
+
+# Get CAZ start date
+caz_start_year <- CAZ_lst |>
+  filter(CAZ == params$current_caz) |>
+  pull(Start)
+
+caz_start <- as.Date(paste0(caz_start_year, "-01-01"))
+
+# Filter CAZ practices
+caz_saba <- CAZ_SABA |>
+  left_join(
+    CAZ_practices |>
+      st_drop_geometry() |>
+      select(code, location_class, CAZ_name),
+    by = c("org_id" = "code")
+  ) |>
+  filter(CAZ_name == params$current_caz)
+
+# Aggregate CAZ data
+caz_agg <- caz_saba |>
+  filter(str_detect(location_class, "within")) |>
+  summarise(
+    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),
+    total_numerator = sum(numerator, na.rm = TRUE),
+    total_denominator = sum(denominator, na.rm = TRUE),
+    .by = c(location_class, date, month, year)
+  ) |>
+  filter(total_patients > 0) |>
+  mutate(
+    inhalers_per_1000 = (total_denominator / total_patients) * 1000,
+    treatment = 1
+  )
+
+# Aggregate control data
+control_agg <- noCAZ_SABA |>
+  summarise(
+    total_patients = sum(NUMBER_OF_PATIENTS, na.rm = TRUE),
+    total_numerator = sum(numerator, na.rm = TRUE),
+    total_denominator = sum(denominator, na.rm = TRUE),
+    .by = c(date, month, year)
+  ) |>
+  filter(total_patients > 0) |>
+  mutate(
+    inhalers_per_1000 = (total_denominator / total_patients) * 1000,
+    treatment = 0,
+    location_class = "Control"
+  )
+
+# Combine treatment and control
+did_data <- bind_rows(
+  caz_agg,
+  control_agg
+) |>
+  mutate(
+    post = as.integer(date >= caz_start),
+    time_to_treatment = as.numeric(difftime(date, caz_start, units = "days")) /
+      30.44 # Convert to months
+  ) |>
+  filter(
+    !is.na(inhalers_per_1000),
+    is.finite(inhalers_per_1000)
+  ) |>
+  arrange(date, treatment)
+```
+
+## Summary Statistics
+
+```{r}
+#| label: summary-stats
+
+did_summary <- did_data |>
+  group_by(treatment, post) |>
+  summarise(
+    n_obs = n(),
+    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),
+    sd_inhalers = sd(inhalers_per_1000, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    period = ifelse(post == 0, "Pre-CAZ", "Post-CAZ"),
+    group = ifelse(treatment == 1, params$current_caz, "Control")
+  )
+
+kable(
+  did_summary |>
+    select(group, period, n_obs, mean_inhalers, sd_inhalers),
+  digits = 2,
+  col.names = c("Group", "Period", "N Obs", "Mean Inhalers/1000", "SD"),
+  caption = "Summary Statistics by Treatment and Period"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+## Parallel Trends Visualization
+
+```{r}
+#| label: fig-parallel-trends
+#| fig-width: 10
+#| fig-height: 6
+
+plot_data <- did_data |>
+  group_by(date, treatment) |>
+  summarise(
+    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    group = ifelse(treatment == 1, "CAZ", "Control")
+  )
+
+ggplot(
+  plot_data,
+  aes(x = date, y = mean_inhalers, color = group, linetype = group)
+) +
+  geom_line(linewidth = 1) +
+  geom_vline(
+    xintercept = caz_start,
+    linetype = "dashed",
+    color = "red",
+    linewidth = 0.8
+  ) +
+  annotate(
+    "text",
+    x = caz_start,
+    y = max(plot_data$mean_inhalers, na.rm = TRUE),
+    label = "CAZ Implementation",
+    vjust = -0.5,
+    color = "red"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold")
+  ) +
+  labs(
+    title = paste(
+      "Total Inhaler Prescriptions:",
+      "CAZ",
+      "vs Control"
+    ),
+    subtitle = "Per 1,000 registered patients",
+    x = "Date",
+    y = "Inhalers per 1,000 patients",
+    color = "Group",
+    linetype = "Group"
+  ) +
+  scale_color_manual(
+    values = c("CAZ" = "#E69F00", "Control" = "#0072B2")
+  )
+```
+
+## Difference Plot
+
+Difference plot with 12-month rolling average to smooth out short-term fluctuations and highlight overall trends.
+
+```{r}
+#| label: fig-did-raw-difference
+#| fig-width: 10
+#| fig-height: 6
+
+diff_plot_data <- did_data |>
+  group_by(date, treatment) |>
+  summarise(
+    mean_inhalers = mean(inhalers_per_1000, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    group = ifelse(treatment == 1, "CAZ", "Control")
+  ) |>
+  select(-treatment) |>
+  pivot_wider(names_from = group, values_from = mean_inhalers) |>
+  mutate(
+    caz_rm = zoo::rollmean(
+      get("CAZ"),
+      k = 12,
+      fill = NA,
+      align = "right"
+    ),
+    control_rm = zoo::rollmean(Control, k = 12, fill = NA, align = "right")
+  ) |>
+  mutate(
+    difference_rm = caz_rm - control_rm,
+    difference = get("CAZ") - Control
+  )
+
+ggplot(diff_plot_data, aes(x = date)) +
+  geom_line(
+    aes(y = difference, color = "Monthly Difference"),
+    linewidth = 0.5
+  ) +
+  geom_line(
+    aes(y = difference_rm, color = "12-month Rolling Average"),
+    linewidth = 1
+  ) +
+  geom_vline(
+    xintercept = caz_start,
+    linetype = "dashed",
+    color = "red",
+    linewidth = 0.8
+  ) +
+  annotate(
+    "text",
+    x = caz_start,
+    y = max(diff_plot_data$difference, na.rm = TRUE),
+    label = "CAZ Implementation",
+    vjust = -0.5,
+    hjust = -0.1,
+    color = "red"
+  ) +
+  labs(
+    title = paste(
+      "Difference in Inhaler Prescriptions:",
+      "CAZ",
+      "vs Control"
+    ),
+    subtitle = "Per 1,000 registered patients",
+    x = "Date",
+    y = "Inhalers per 1,000 patients"
+  ) +
+  theme_minimal(base_size = 12) +
+  scale_y_continuous(expand = 0.2) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(face = "bold")
+  ) +
+  scale_color_manual(
+    values = c(
+      "Monthly Difference" = "#888888",
+      "12-month Rolling Average" = "black"
+    ),
+    name = ""
+  )
+```
+
+## Difference-in-Differences Models
+
+### Basic DiD Model
+
+```{r}
+#| label: did-basic
+
+did_model_basic <- lm(
+  inhalers_per_1000 ~ treatment * post,
+  data = did_data
+)
+
+summary(did_model_basic)
+
+did_coef_basic <- tidy(did_model_basic, conf.int = TRUE) |>
+  filter(term == "treatment:post")
+
+kable(
+  did_coef_basic,
+  digits = 3,
+  caption = "DiD Estimate (Treatment × Post interaction)"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+### DiD with Time Trends
+
+```{r}
+#| label: did-trends
+
+did_model_trends <- lm(
+  inhalers_per_1000 ~ treatment * post + time_to_treatment,
+  data = did_data
+)
+
+summary(did_model_trends)
+
+did_coef_trends <- tidy(did_model_trends, conf.int = TRUE) |>
+  filter(term == "treatment:post")
+
+kable(
+  did_coef_trends,
+  digits = 3,
+  caption = "DiD Estimate with Time Trends (Treatment × Post interaction)"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+### DiD with Month Fixed Effects
+
+```{r}
+#| label: did-month-fe
+
+did_model_month <- lm(
+  inhalers_per_1000 ~ treatment * post + factor(month),
+  data = did_data
+)
+
+summary(did_model_month)
+
+did_coef_month <- tidy(did_model_month, conf.int = TRUE) |>
+  filter(term == "treatment:post")
+
+kable(
+  did_coef_month,
+  digits = 3,
+  caption = "DiD Estimate with Month Fixed Effects (Treatment × Post interaction)"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+## Comparison Across Specifications
+
+```{r}
+#| label: comparison-table
+
+comparison <- bind_rows(
+  did_coef_basic |> mutate(model = "Basic DiD"),
+  did_coef_trends |> mutate(model = "With Time Trend"),
+  did_coef_month |> mutate(model = "With Month FE")
+) |>
+  select(model, estimate, std.error, statistic, p.value, conf.low, conf.high)
+
+kable(
+  comparison,
+  digits = 3,
+  caption = "Comparison of DiD Estimates Across Specifications"
+) |>
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+
+## Interpretation
+
+**DiD Estimate:** `{r} sprintf("%.3f", did_coef_basic$estimate)` inhalers per 1,000 patients (95% CI: [`{r} sprintf("%.3f", did_coef_basic$conf.low)`, `{r} sprintf("%.3f", did_coef_basic$conf.high)`])
+
+**P-value:** `{r} sprintf("%.3f", did_coef_basic$p.value)`
+
+**Statistical Significance:** `{r} ifelse(did_coef_basic$p.value < 0.05, "Statistically significant at 5% level", "Not statistically significant at 5% level")`
+
+### Key Findings
+
+1. **Direction**: The estimate indicates a `{r} ifelse(did_coef_basic$estimate > 0, "positive", "negative")` effect on inhaler prescriptions
+
+2. **Magnitude**: The CAZ is associated with a change of approximately `{r} abs(round(did_coef_basic$estimate, 2))` inhalers per 1,000 patients
+
+3. **Robustness**: The estimate is `{r} ifelse(abs(max(comparison$estimate) - min(comparison$estimate)) < 0.5, "stable", "somewhat variable")` across different model specifications
+
+---
+
+*Results produced on: `{r} Sys.Date()`*

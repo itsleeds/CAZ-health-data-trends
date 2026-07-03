@@ -24,24 +24,24 @@ By combining Fingertips data with our prescription analysis, we can build a more
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!require("remotes")) {
-  install.packages("remotes")
+    install.packages("remotes")
 }
-pkgs = c(
-  "sf",
-  "tidyverse",
-  "here",
-  "tmap"
+pkgs <- c(
+    "sf",
+    "tidyverse",
+    "here",
+    "tmap"
 )
 
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 
 if (!("fingertipsR" %in% installed.packages())) {
-  remotes::install_github(
-    "rOpenSci/fingertipsR",
-    build_vignettes = TRUE,
-    quiet = TRUE
-  )
+    remotes::install_github(
+        "rOpenSci/fingertipsR",
+        build_vignettes = TRUE,
+        quiet = TRUE
+    )
 }
 
 library(fingertipsR)
@@ -66,8 +66,8 @@ Extracting health indicators specifically for asthma conditions using domain cod
 indicator_lst_asthma <- indicators(DomainID = 8000009)
 
 indicator_lst_asthma |>
-  head(10) |>
-  knitr::kable()
+    head(10) |>
+    knitr::kable()
 ```
 
 ### Respiratory Disease Indicators
@@ -78,10 +78,20 @@ Obtaining indicators for broader respiratory diseases using profile code 29.
 indicator_lst_resp <- indicators(ProfileID = 29)
 
 indicator_lst_resp |>
-  head(10) |>
-  knitr::kable()
+    head(10) |>
+    knitr::kable()
 ```
 
+Obtaining indicators for broader cardiovascular disease using profile code 135.
+
+```{r}
+indicator_lst_cardio <- indicators(ProfileID = 135)
+
+indicator_lst_cardio |>
+    head(10) |>
+    knitr::kable()
+```
+  
 ### Indicator Selection
 
 Creating an object for the Hospital Admissions indicator.
@@ -90,7 +100,7 @@ Creating an object for the Hospital Admissions indicator.
 # sel_indicator <- indicator_lst_resp |>
 #   pull(IndicatorID)
 
-sel_indicator <- 90810
+sel_indicator <- c(90810, 90986, 212)
 ```
 
 ### Area Type Mapping
@@ -99,8 +109,8 @@ Determining which geographic area types are available for the selected health in
 
 ```{r}
 area_avail_ind <- do.call(
-  bind_rows,
-  lapply(sel_indicator, \(x) indicator_areatypes(IndicatorID = x))
+    bind_rows,
+    lapply(sel_indicator, \(x) indicator_areatypes(IndicatorID = x))
 )
 ```
 
@@ -118,39 +128,42 @@ Joining indicator and area type information with descriptive names for clarity.
 
 ```{r}
 area_avail_ind_names <- area_avail_ind |>
-  left_join(
-    indicator_lst_resp |>
-      select(IndicatorID, IndicatorName) |>
-      unique(),
-    by = join_by(IndicatorID)
-  ) |>
-  left_join(
-    area_ty_lst |>
-      select(AreaTypeID, AreaTypeName) |>
-      unique(),
-    by = join_by(AreaTypeID)
-  )
+    left_join(
+        indicator_lst_resp |>
+            select(IndicatorID, IndicatorName) |>
+            unique(),
+        by = join_by(IndicatorID)
+    ) |>
+    left_join(
+        area_ty_lst |>
+            select(AreaTypeID, AreaTypeName) |>
+            unique(),
+        by = join_by(AreaTypeID)
+    )
 
 slice_sample(area_avail_ind_names, n = 15) |>
-  select(-IndicatorID, -AreaTypeID) |>
-  knitr::kable()
+    select(-IndicatorID, -AreaTypeID) |>
+    knitr::kable()
 ```
 
-### Sample Data Extraction
+### Data Extraction
 
-Downloading actual data for the indicator Lower and Upper tier LAs.
+Downloading actual data for the indicators Lower and Upper tier LAs.
 
 ```{r}
+#| label: get_fingertips_data
+#| output: false
 temp_data <- fingertips_data(
-  IndicatorID = area_avail_ind$IndicatorID[1],
-  AreaTypeID = "All"
+    IndicatorID = sel_indicator,
+    AreaTypeID = "All"
 )
 
-temp_data |> sample_n(10) |> knitr::kable()
-
+temp_data |>
+    sample_n(10) |>
+    knitr::kable()
 ```
 
 ```{r}
-write_csv(temp_data, "data_raw/hospital_admissions.csv", append = F)
+write_csv(temp_data, "data_raw/fingertips_data.csv", append = F)
 ```
 

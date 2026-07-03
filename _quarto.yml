@@ -54,6 +54,22 @@ website:
             text: Portsmouth
           - href: qmds_ghpages/03_results/Newcastle_upon_Tyne_results.qmd
             text: Newcastle upon Tyne
+      - section: DiD Analysis
+        contents:
+          - href: qmds_ghpages/03_results/Sheffield_DiD_analysis.qmd
+            text: Sheffield
+          - href: qmds_ghpages/03_results/BANES_DiD_analysis.qmd
+            text: Bath and North East Somerset
+          - href: qmds_ghpages/03_results/Birmingham_DiD_analysis.qmd
+            text: Birmingham
+          - href: qmds_ghpages/03_results/Bristol_DiD_analysis.qmd
+            text: Bristol
+          - href: qmds_ghpages/03_results/Bradford_DiD_analysis.qmd
+            text: Bradford
+          - href: qmds_ghpages/03_results/Portsmouth_DiD_analysis.qmd
+            text: Portsmouth
+          - href: qmds_ghpages/03_results/Newcastle_upon_Tyne_DiD_analysis.qmd
+            text: Newcastle upon Tyne
       - qmds_ghpages/about.qmd
 
 format:

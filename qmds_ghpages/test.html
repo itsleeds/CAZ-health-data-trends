@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue, Pink & White Design</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 1. Variables & Reset */
+        :root {
+            --white: #FFFFFF;
+            --midnight-blue: #1A2A6C;
+            --electric-pink: #FF007F;
+            --sky-blue: #8ECAE6;
+            --slate-blue: #4A5568;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--white);
+            color: var(--midnight-blue);
+            line-height: 1.6;
+        }
+
+        /* 2. Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 10%;
+            border-bottom: 1px solid var(--sky-blue);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--midnight-blue);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--midnight-blue);
+            margin-left: 30px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--electric-pink);
+        }
+
+        /* 3. Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            padding: 80px 10%;
+            gap: 50px;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero-content span {
+            color: var(--electric-pink);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--slate-blue);
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        /* 4. The Button */
+        .btn {
+            background-color: var(--electric-pink);
+            color: var(--white);
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 127, 0.2);
+        }
+
+        /* 5. The Bi-Color (Duotone) Image Filter */
+        .image-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .duotone-img {
+            width: 100%;
+            border-radius: 20px;
+            /* CSS Filter Trick: 
+               Grayscale turns the image B&W, 
+               Sepia adds warmth, 
+               Hue-rotate/Contrast adjusts to our palette 
+            */
+            filter: grayscale(100%) contrast(1.2) brightness(0.9);
+            display: block;
+        }
+
+        /* Overlay to force the Midnight Blue & Pink vibe */
+        .image-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(45deg, var(--midnight-blue), var(--electric-pink));
+            mix-blend-mode: screen;
+            opacity: 0.7;
+        }
+
+        /* 6. Simple Responsive Mix */
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">CREATIVE<span>.</span></div>
+        <div class="nav-links">
+            <a href="#">Work</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Design with <span>Impact</span> and Clarity.</h1>
+            <p>We blend deep midnight blues with vibrant pink accents to create digital experiences that are impossible
+                to ignore.</p>
+            <a href="#" class="btn">Start a Project</a>
+        </div>
+
+        <div class="image-container">
+            <img src="https://mobscilab.com/wp-content/uploads/2024/10/ed.jpeg" alt="Abstract Art" class="duotone-img">
+        </div>
+    </header>
+
+</body>
+
+</html>

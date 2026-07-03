@@ -60,6 +60,36 @@ Prescription trends for Methylprednisolone (BNF code 0603020S0), an oral cortico
 
 ![Methylprednisolone Trend](../figures/trend_`{r} params$current_caz`_0603020S0.png)
 
+### Thiazide Diuretics Analysis
+
+Prescription trends for Thiazide Diuretics (BNF code 020201).
+
+![Thiazide Diuretics Trend](../figures/trend_`{r} params$current_caz`_020201.png)
+
+### ACE Inhibitors Analysis
+
+Prescription trends for ACE Inhibitors (BNF code 0205051).
+
+![ACE Inhibitors Trend](../figures/trend_`{r} params$current_caz`_0205051.png)
+
+### ARBs Analysis
+
+Prescription trends for ARBs (BNF code 020505).
+
+![ARBs Trend](../figures/trend_`{r} params$current_caz`_020505.png)
+
+### Beta Blockers Analysis
+
+Prescription trends for Beta Blockers (BNF code 0204).
+
+![Beta Blockers Trend](../figures/trend_`{r} params$current_caz`_0204.png)
+
+### Statins Analysis
+
+Prescription trends for Statins (BNF code 0212).
+
+![Statins Trend](../figures/trend_`{r} params$current_caz`_0212.png)
+
 ### Main BNF Codes Analysis
 
 Prescription trends across all main BNF medication categories.

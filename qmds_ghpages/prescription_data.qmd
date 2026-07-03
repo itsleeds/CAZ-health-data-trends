@@ -30,30 +30,32 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!require("remotes")) {
   install.packages("remotes")
 }
-pkgs = c(
+pkgs <- c(
   "sf",
   "tidyverse",
   "here",
   "tmap",
   "geojsonsf",
-  "rvest"
+  "rvest",
+  "httr"
 )
 
 remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 ```
 
-
-## Downloading data
+## Loading data
 
 Loading Sub-ICB boundary data for geographic reference.
 
 ```{r}
+#| label: load-boundaries
+
 subicb_boundaries <- st_read(file.path(
   here(),
   "data_raw",
   "subicb_boundaries.gpkg"
-))
+), quiet = TRUE)
 ```
 
 ### SABA
@@ -113,117 +115,106 @@ links <- links[grep("/bnf/\\d{2,6}/$", links)] |>
   str_remove("/$")
 links <- links[order(nchar(links))]
 
-dates <- seq(as.Date("2021-01-01"), as.Date("2025-11-01"), "months")
+dates <- seq(as.Date("2021-05-01"), as.Date("2026-04-01"), "months")
 
 full_data_grid <- expand_grid(code = links, date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
 
 write_rds(full_data_grid, file = "data_raw/full_bnf_grid.rds")
 
-limit_group2 <- full_data_grid |> filter(group == 2) |> nrow()
+# Helper function to read from the OpenPrescribing API with browser headers to avoid Cloudflare blocks
+read_openprescribing <- function(url) {
+  resp <- GET(url,
+              add_headers(Accept = "application/json"),
+              user_agent("R httr"))
+  stop_for_status(resp)
+  content(resp, as = "text", encoding = "UTF-8")
+}
 
-
-## This is to be run
-dir.create("data_raw/bnf_all", showWarnings = F)
-all_bnf_codes <- lapply(seq_len(limit_group2), \(x) {
-  if (
-    !file.exists(file.path("data_raw", "bnf_all", full_data_grid$file.name[x]))
-  ) {
-    download.file(
-      paste0(
+# Define a robust download helper function with rate-limiting and error handling
+download_bnf_grid <- function(grid_df) {
+  dir.create("data_raw/bnf_all", showWarnings = FALSE)
+  for (i in seq_len(nrow(grid_df))) {
+    dest <- file.path("data_raw", "bnf_all", grid_df$file.name[i])
+    if (!file.exists(dest)) {
+      url <- paste0(
         "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
-        full_data_grid$code[x],
+        grid_df$code[i],
         "&date=",
-        full_data_grid$date[x],
+        grid_df$date[i],
         "&format=csv"
-      ),
-      destfile = file.path("data_raw", "bnf_all", full_data_grid$file.name[x]),
-      mode = "wb"
-    )
+      )
+      tryCatch({
+        csv_text <- read_openprescribing(url)
+        
+        # Verify response looks like a CSV (not empty and not HTML)
+        if (nchar(csv_text) > 50 && !grepl("<!DOCTYPE html>", csv_text, fixed = TRUE)) {
+          writeLines(csv_text, dest, useBytes = TRUE)
+          Sys.sleep(0.1) # be considerate to the API rate limit
+        } else {
+          warning(paste("Invalid file content returned for:", url))
+        }
+      }, error = function(e) {
+        warning(paste("Failed to download:", url, "-", e$message))
+        if (file.exists(dest)) file.remove(dest)
+      })
+    }
   }
-})
-```
+}
 
+all_data_group2 <- full_data_grid |> filter(group == 2)
+download_bnf_grid(all_data_group2)
+```
 
 ### Montelukast
 
 ```{r}
+#| label: download-montelukast
+#| warning: false
+#| message: false
+
 mont_data_grid <- expand_grid(code = "0303020G0", date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
 
-
-dir.create("data_raw/bnf_all", showWarnings = F)
-all_bnf_codes <- lapply(seq_len(mont_data_grid |> nrow()), \(x) {
-  if (
-    !file.exists(file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]))
-  ) {
-    download.file(
-      paste0(
-        "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
-        mont_data_grid$code[x],
-        "&date=",
-        mont_data_grid$date[x],
-        "&format=csv"
-      ),
-      destfile = file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]),
-      mode = "wb"
-    )
-  }
-})
-
+download_bnf_grid(mont_data_grid)
 ```
-
 
 ### Anxiolytics and Antidepressants
 
 ```{r}
-mont_data_grid <- expand_grid(code = c("0403","040102"), date = dates) |>
+#| label: download-anxiolytics-antidepressants
+#| warning: false
+#| message: false
+
+mont_data_grid_anx_antd <- expand_grid(code = c("0403", "040102"), date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
 
-
-dir.create("data_raw/bnf_all", showWarnings = F)
-all_bnf_codes <- lapply(seq_len(mont_data_grid |> nrow()), \(x) {
-  if (
-    !file.exists(file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]))
-  ) {
-    download.file(
-      paste0(
-        "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
-        mont_data_grid$code[x],
-        "&date=",
-        mont_data_grid$date[x],
-        "&format=csv"
-      ),
-      destfile = file.path("data_raw", "bnf_all", mont_data_grid$file.name[x]),
-      mode = "wb"
-    )
-  }
-})
-
+download_bnf_grid(mont_data_grid_anx_antd)
 ```
 
 ### Oral Steroid Methylprednisolone
 
 ```{r}
+#| label: download-methylprednisolone
+#| warning: false
+#| message: false
+
 meth_data_grid <- expand_grid(code = "0603020S0", date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
 
+download_bnf_grid(meth_data_grid)
+```
 
-dir.create("data_raw/bnf_all", showWarnings = F)
-all_bnf_codes <- lapply(seq_len(meth_data_grid |> nrow()), \(x) {
-  if (
-    !file.exists(file.path("data_raw", "bnf_all", meth_data_grid$file.name[x]))
-  ) {
-    download.file(
-      paste0(
-        "https://openprescribing.net/api/1.0/spending_by_org/?org_type=practice&code=",
-        meth_data_grid$code[x],
-        "&date=",
-        meth_data_grid$date[x],
-        "&format=csv"
-      ),
-      destfile = file.path("data_raw", "bnf_all", meth_data_grid$file.name[x]),
-      mode = "wb"
-    )
-  }
-})
+### Cardiovascular Indicators
+
+```{r}
+#| label: download-cardio-indicators
+#| warning: false
+#| message: false
+
+cardio_codes <- c("020201", "0205051", "020505", "0204", "0212")
+cardio_grid <- expand_grid(code = cardio_codes, date = dates) |>
+  mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
+
+download_bnf_grid(cardio_grid)
+```

@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>fingertips_data – CAZ Health Indicators Trends</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -67,15 +70,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-a35d343c8bdbcb87d3b82ed68e48a46c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -356,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#area-type-mapping" id="toc-area-type-mapping" class="nav-link" data-scroll-target="#area-type-mapping">Area Type Mapping</a></li>
   <li><a href="#geographic-classifications" id="toc-geographic-classifications" class="nav-link" data-scroll-target="#geographic-classifications">Geographic Classifications</a></li>
   <li><a href="#data-integration" id="toc-data-integration" class="nav-link" data-scroll-target="#data-integration">Data Integration</a></li>
-  <li><a href="#sample-data-extraction" id="toc-sample-data-extraction" class="nav-link" data-scroll-target="#sample-data-extraction">Sample Data Extraction</a></li>
+  <li><a href="#data-extraction" id="toc-data-extraction" class="nav-link" data-scroll-target="#data-extraction">Data Extraction</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -400,13 +402,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Show the code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">"remotes"</span>)) {</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"here"</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tmap"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sf"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tidyverse"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"here"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tmap"</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_cran</span>(pkgs)</span>
@@ -419,11 +421,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span>(<span class="st">"fingertipsR"</span> <span class="sc">%in%</span> <span class="fu">installed.packages</span>())) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"rOpenSci/fingertipsR"</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">build_vignettes =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"rOpenSci/fingertipsR"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">build_vignettes =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fingertipsR)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -463,8 +465,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_asthma <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">DomainID =</span> <span class="dv">8000009</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_asthma <span class="sc">|&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -512,24 +514,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Respiratory disease</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">93594</td>
-<td style="text-align: left;">Median length of stay (days) of emergency admissions to hospital for asthma in adults (aged 19 years and over)</td>
-<td style="text-align: right;">8000009</td>
-<td style="text-align: left;">Asthma</td>
-<td style="text-align: right;">29</td>
-<td style="text-align: left;">Respiratory disease</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">93595</td>
-<td style="text-align: left;">Median length of stay (days) of emergency admissions to hospital for asthma (aged under 19 years)</td>
-<td style="text-align: right;">8000009</td>
-<td style="text-align: left;">Asthma</td>
-<td style="text-align: right;">29</td>
-<td style="text-align: left;">Respiratory disease</td>
-</tr>
-<tr class="even">
 <td style="text-align: right;">93644</td>
-<td style="text-align: left;">Mortality rate from asthma</td>
+<td style="text-align: left;">Mortality rate from asthma, all ages</td>
 <td style="text-align: right;">8000009</td>
 <td style="text-align: left;">Asthma</td>
 <td style="text-align: right;">29</td>
@@ -565,8 +551,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_resp <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">ProfileID =</span> <span class="dv">29</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_resp <span class="sc">|&gt;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -673,6 +659,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+<p>Obtaining indicators for broader cardiovascular disease using profile code 135.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_cardio <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">ProfileID =</span> <span class="dv">135</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_cardio <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 64%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">IndicatorID</th>
+<th style="text-align: left;">IndicatorName</th>
+<th style="text-align: right;">DomainID</th>
+<th style="text-align: left;">DomainName</th>
+<th style="text-align: right;">ProfileID</th>
+<th style="text-align: left;">ProfileName</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">219</td>
+<td style="text-align: left;">Hypertension: QOF prevalence</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">90616</td>
+<td style="text-align: left;">Smoking status of patients with certain conditions recorded in the last 12 months (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">90619</td>
+<td style="text-align: left;">Record of offer of support and treatment in the last 24 months for smokers aged 15+ yrs (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">91262</td>
+<td style="text-align: left;">Patients (aged 45+ yrs), who have a record of blood pressure in the last 5 yrs (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">91734</td>
+<td style="text-align: left;">People receiving an NHS Health Check per year</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">92443</td>
+<td style="text-align: left;">Smoking Prevalence in adults (aged 18 and over) - current smokers (APS)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">93015</td>
+<td style="text-align: left;">Percentage of physically inactive adults</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">93088</td>
+<td style="text-align: left;">Overweight (including obesity) prevalence in adults, (using adjusted self-reported height and weight)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">93709</td>
+<td style="text-align: left;">Last BP reading of patients (&lt;80 yrs, with hypertension), in the last 12 months is &lt;= 140/90 mmHg (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">93710</td>
+<td style="text-align: left;">Last BP reading of patients (80+ yrs, with hypertension), in the last 12 months is &lt;= 150/90 mmHg (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133106</td>
+<td style="text-align: left;">Risk Factors</td>
+<td style="text-align: right;">135</td>
+<td style="text-align: left;">Cardiovascular Disease</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 <section id="indicator-selection" class="level3">
 <h3 class="anchored" data-anchor-id="indicator-selection">Indicator Selection</h3>
@@ -680,10 +781,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sel_indicator &lt;- indicator_lst_resp |&gt;</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   pull(IndicatorID)</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>sel_indicator <span class="ot">&lt;-</span> <span class="dv">90810</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sel_indicator &lt;- indicator_lst_resp |&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   pull(IndicatorID)</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>sel_indicator <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">90810</span>, <span class="dv">90986</span>, <span class="dv">212</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -693,10 +794,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  bind_rows,</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(sel_indicator, \(x) <span class="fu">indicator_areatypes</span>(<span class="at">IndicatorID =</span> x))</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    bind_rows,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lapply</span>(sel_indicator, \(x) <span class="fu">indicator_areatypes</span>(<span class="at">IndicatorID =</span> x))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -706,7 +807,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>area_ty_lst <span class="ot">&lt;-</span> <span class="fu">area_types</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>area_ty_lst <span class="ot">&lt;-</span> <span class="fu">area_types</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -716,29 +817,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind_names <span class="ot">&lt;-</span> area_avail_ind <span class="sc">|&gt;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    indicator_lst_resp <span class="sc">|&gt;</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(IndicatorID, IndicatorName) <span class="sc">|&gt;</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unique</span>(),</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(IndicatorID)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    area_ty_lst <span class="sc">|&gt;</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(AreaTypeID, AreaTypeName) <span class="sc">|&gt;</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unique</span>(),</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(AreaTypeID)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(area_avail_ind_names, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>IndicatorID, <span class="sc">-</span>AreaTypeID) <span class="sc">|&gt;</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind_names <span class="ot">&lt;-</span> area_avail_ind <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        indicator_lst_resp <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(IndicatorID, IndicatorName) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">unique</span>(),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">join_by</span>(IndicatorID)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        area_ty_lst <span class="sc">|&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(AreaTypeID, AreaTypeName) <span class="sc">|&gt;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">unique</span>(),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">join_by</span>(AreaTypeID)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(area_avail_ind_names, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>IndicatorID, <span class="sc">-</span>AreaTypeID) <span class="sc">|&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 53%">
-<col style="width: 46%">
+<col style="width: 59%">
+<col style="width: 40%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -749,440 +850,89 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Counties &amp; UAs (2020/21)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">ICBs</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NHS regions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">PCNs (v. 26/06/25)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">England</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">ICBs</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Districts &amp; UAs (from Apr 2023)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
 <td style="text-align: left;">England</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">ICBs, former STPs</td>
+<td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Upper tier local authorities (4/21-3/23)</td>
+<td style="text-align: left;">Regions (statistical)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Government Office Region (E12)</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Regions (statistical)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Lower tier local authorities (4/21-3/23)</td>
+<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Lower tier local authorities (post 4/23)</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
 <td style="text-align: left;">NHS regions</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Upper tier local authorities (post 4/23)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Upper tier local authorities (4/20-3/21)</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </section>
-<section id="sample-data-extraction" class="level3">
-<h3 class="anchored" data-anchor-id="sample-data-extraction">Sample Data Extraction</h3>
-<p>Downloading actual data for the indicator Lower and Upper tier LAs.</p>
+<section id="data-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="data-extraction">Data Extraction</h3>
+<p>Downloading actual data for the indicators Lower and Upper tier LAs.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>temp_data <span class="ot">&lt;-</span> <span class="fu">fingertips_data</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">IndicatorID =</span> area_avail_ind<span class="sc">$</span>IndicatorID[<span class="dv">1</span>],</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">AreaTypeID =</span> <span class="st">"All"</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>temp_data <span class="ot">&lt;-</span> <span class="fu">fingertips_data</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">IndicatorID =</span> sel_indicator,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">AreaTypeID =</span> <span class="st">"All"</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>temp_data <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample_n</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-  |                                                                            
-  |                                                                      |   0%
-  |                                                                            
-  |==========                                                            |  14%
-  |                                                                            
-  |====================                                                  |  29%
-  |                                                                            
-  |==============================                                        |  43%
-  |                                                                            
-  |========================================                              |  57%
-  |                                                                            
-  |==================================================                    |  71%
-  |                                                                            
-  |============================================================          |  86%
-  |                                                                            
-  |======================================================================| 100%</code></pre>
-</div>
-<details class="code-fold">
-<summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>temp_data <span class="sc">|&gt;</span> <span class="fu">sample_n</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 2%">
-<col style="width: 9%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 12%">
-<col style="width: 7%">
-<col style="width: 1%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 1%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 3%">
-<col style="width: 3%">
-<col style="width: 3%">
-<col style="width: 3%">
-<col style="width: 1%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 2%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 3%">
-<col style="width: 1%">
-<col style="width: 3%">
-<col style="width: 3%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: right;">IndicatorID</th>
-<th style="text-align: left;">IndicatorName</th>
-<th style="text-align: left;">ParentCode</th>
-<th style="text-align: left;">ParentName</th>
-<th style="text-align: left;">AreaCode</th>
-<th style="text-align: left;">AreaName</th>
-<th style="text-align: left;">AreaType</th>
-<th style="text-align: left;">Sex</th>
-<th style="text-align: left;">Age</th>
-<th style="text-align: left;">CategoryType</th>
-<th style="text-align: left;">Category</th>
-<th style="text-align: left;">Timeperiod</th>
-<th style="text-align: right;">Value</th>
-<th style="text-align: right;">LowerCI95.0limit</th>
-<th style="text-align: right;">UpperCI95.0limit</th>
-<th style="text-align: right;">LowerCI99.8limit</th>
-<th style="text-align: right;">UpperCI99.8limit</th>
-<th style="text-align: right;">Count</th>
-<th style="text-align: right;">Denominator</th>
-<th style="text-align: left;">Valuenote</th>
-<th style="text-align: left;">RecentTrend</th>
-<th style="text-align: left;">ComparedtoEnglandvalueorpercentiles</th>
-<th style="text-align: left;">ComparedtoParentvalueorpercentiles</th>
-<th style="text-align: right;">TimeperiodSortable</th>
-<th style="text-align: left;">Newdata</th>
-<th style="text-align: left;">Comparedtogoal</th>
-<th style="text-align: left;">Timeperiodrange</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E09000004</td>
-<td style="text-align: left;">Bexley</td>
-<td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
-<td style="text-align: left;">Male</td>
-<td style="text-align: left;">0-9 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2020/21</td>
-<td style="text-align: right;">153.78937</td>
-<td style="text-align: right;">109.43015</td>
-<td style="text-align: right;">241.6652</td>
-<td style="text-align: right;">84.29098</td>
-<td style="text-align: right;">290.7698</td>
-<td style="text-align: right;">25</td>
-<td style="text-align: right;">16256</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20200000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">nE54000018</td>
-<td style="text-align: left;">NHS Coventry and Warwickshire Integrated Care Board - QWU</td>
-<td style="text-align: left;">ICBs</td>
-<td style="text-align: left;">Male</td>
-<td style="text-align: left;">10-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2017/18</td>
-<td style="text-align: right;">172.22449</td>
-<td style="text-align: right;">132.72820</td>
-<td style="text-align: right;">209.5730</td>
-<td style="text-align: right;">115.19136</td>
-<td style="text-align: right;">235.4270</td>
-<td style="text-align: right;">80</td>
-<td style="text-align: right;">46451</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Worse</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20170000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E08000022</td>
-<td style="text-align: left;">North Tyneside</td>
-<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
-<td style="text-align: left;">Female</td>
-<td style="text-align: left;">0-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2020/21</td>
-<td style="text-align: right;">94.08223</td>
-<td style="text-align: right;">50.15756</td>
-<td style="text-align: right;">133.8284</td>
-<td style="text-align: right;">35.87002</td>
-<td style="text-align: right;">166.5107</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">21258</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20200000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E09000029</td>
-<td style="text-align: left;">Sutton</td>
-<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
-<td style="text-align: left;">Female</td>
-<td style="text-align: left;">0-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2018/19</td>
-<td style="text-align: right;">207.27107</td>
-<td style="text-align: right;">150.26145</td>
-<td style="text-align: right;">268.5487</td>
-<td style="text-align: right;">124.99941</td>
-<td style="text-align: right;">309.8798</td>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">24123</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20180000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E08000029</td>
-<td style="text-align: left;">Solihull</td>
-<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
-<td style="text-align: left;">Persons</td>
-<td style="text-align: left;">0-9 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2014/15</td>
-<td style="text-align: right;">161.64882</td>
-<td style="text-align: right;">112.06092</td>
-<td style="text-align: right;">215.4607</td>
-<td style="text-align: right;">90.83864</td>
-<td style="text-align: right;">252.3769</td>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">24745</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Better</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20140000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E09000021</td>
-<td style="text-align: left;">Kingston upon Thames</td>
-<td style="text-align: left;">Districts &amp; UAs (2021/22-2022/23)</td>
-<td style="text-align: left;">Male</td>
-<td style="text-align: left;">0-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2018/19</td>
-<td style="text-align: right;">258.91979</td>
-<td style="text-align: right;">201.09415</td>
-<td style="text-align: right;">353.1275</td>
-<td style="text-align: right;">168.31513</td>
-<td style="text-align: right;">405.9707</td>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">19311</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20180000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E09000026</td>
-<td style="text-align: left;">Redbridge</td>
-<td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
-<td style="text-align: left;">Persons</td>
-<td style="text-align: left;">0-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2021/22</td>
-<td style="text-align: right;">155.52100</td>
-<td style="text-align: right;">129.45225</td>
-<td style="text-align: right;">185.2976</td>
-<td style="text-align: right;">116.03247</td>
-<td style="text-align: right;">203.5102</td>
-<td style="text-align: right;">125</td>
-<td style="text-align: right;">80375</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20210000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E06000057</td>
-<td style="text-align: left;">Northumberland</td>
-<td style="text-align: left;">Districts &amp; UAs (from Apr 2023)</td>
-<td style="text-align: left;">Persons</td>
-<td style="text-align: left;">0-9 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2015/16</td>
-<td style="text-align: right;">156.67105</td>
-<td style="text-align: right;">121.68106</td>
-<td style="text-align: right;">213.6757</td>
-<td style="text-align: right;">101.84663</td>
-<td style="text-align: right;">245.6508</td>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">31914</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Better</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20150000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E10000016</td>
-<td style="text-align: left;">Kent</td>
-<td style="text-align: left;">Counties &amp; UAs (2020/21)</td>
-<td style="text-align: left;">Persons</td>
-<td style="text-align: left;">0-9 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2022/23</td>
-<td style="text-align: right;">152.45978</td>
-<td style="text-align: right;">134.61016</td>
-<td style="text-align: right;">170.8279</td>
-<td style="text-align: right;">125.34770</td>
-<td style="text-align: right;">182.1799</td>
-<td style="text-align: right;">280</td>
-<td style="text-align: right;">183655</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Similar</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20220000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">90810</td>
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">E92000001</td>
-<td style="text-align: left;">England</td>
-<td style="text-align: left;">E08000012</td>
-<td style="text-align: left;">Liverpool</td>
-<td style="text-align: left;">Districts &amp; UAs (from Apr 2023)</td>
-<td style="text-align: left;">Persons</td>
-<td style="text-align: left;">0-18 yrs</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">2014/15</td>
-<td style="text-align: right;">305.98787</td>
-<td style="text-align: right;">273.76848</td>
-<td style="text-align: right;">345.5414</td>
-<td style="text-align: right;">255.36172</td>
-<td style="text-align: right;">367.9966</td>
-<td style="text-align: right;">290</td>
-<td style="text-align: right;">94775</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Worse</td>
-<td style="text-align: left;">Not compared</td>
-<td style="text-align: right;">20140000</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">1y</td>
-</tr>
-</tbody>
-</table>
-</div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(temp_data, <span class="st">"data_raw/hospital_admissions.csv"</span>, <span class="at">append =</span> F)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(temp_data, <span class="st">"data_raw/fingertips_data.csv"</span>, <span class="at">append =</span> F)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 

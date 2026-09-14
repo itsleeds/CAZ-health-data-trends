@@ -51,22 +51,45 @@ Loading Sub-ICB boundary data for geographic reference.
 ```{r}
 #| label: load-boundaries
 
-subicb_boundaries <- st_read(file.path(
-  here(),
-  "data_raw",
-  "subicb_boundaries.gpkg"
-), quiet = TRUE)
+subicb_boundaries <- st_read(
+  file.path(
+    here(),
+    "data_raw",
+    "subicb_boundaries.gpkg"
+  ),
+  quiet = TRUE
+)
 ```
 
 ### SABA
 
-Downloading SABA prescription data from OpenPrescribing for all Sub-ICB areas.
+Downloading SABA prescription data from OpenPrescribing for all Sub-ICB areas. This updates the records if the last download was more than 10 weeks ago.
 
 ```{r}
 #| label: download-saba
 #| message: false
 
-if (!file.exists(file.path(here(), "data_raw", "all_saba.csv"))) {
+saba_update_check <- function() {
+  last_file <- file.path(here(), "data_raw", "all_saba.csv")
+  if (file.exists(last_file)) {
+    lastfile_info <- file.info(last_file)
+    elapsed_wks <- difftime(Sys.time(), lastfile_info$mtime, units = "weeks") |>
+      as.numeric()
+  } else {
+    return("download")
+  }
+
+  if (elapsed_wks > 10) {
+    return("update")
+  } else {
+    return("load")
+  }
+}
+
+cur_saba_status <- saba_update_check()
+
+
+if (cur_saba_status == "download") {
   all_saba_raw <- do.call(
     bind_rows,
     lapply(subicb_boundaries$code, \(t_code) {
@@ -91,6 +114,53 @@ if (!file.exists(file.path(here(), "data_raw", "all_saba.csv"))) {
     })
   )
   write_csv(all_saba_raw, file = file.path(here(), "data_raw", "all_saba.csv"))
+} else if (cur_saba_status == "update") {
+  new_saba_raw <- do.call(
+    bind_rows,
+    lapply(subicb_boundaries$code, \(t_code) {
+      read_csv(
+        paste0(
+          "https://openprescribing.net/api/1.0/measure_by_practice/?format=csv&org=",
+          t_code,
+          "&parent_org_type=ccg&measure=saba"
+        ),
+        col_types = cols(
+          measure = col_character(),
+          org_type = col_character(),
+          org_id = col_character(),
+          org_name = col_character(),
+          date = col_date(format = ""),
+          numerator = col_double(),
+          denominator = col_double(),
+          calc_value = col_double(),
+          percentile = col_double()
+        )
+      )
+    })
+  )
+
+  write_csv(
+    new_saba_raw,
+    file = file.path(
+      here(),
+      "data_raw",
+      paste0("all_saba_", Sys.Date(), ".csv")
+    )
+  )
+
+  old_saba_raw <- read_csv(file = file.path(here(), "data_raw", "all_saba.csv"))
+
+  new_saba_raw_filtered <- new_saba_raw |>
+    anti_join(old_saba_raw, by = join_by(date, measure, org_id))
+
+  all_saba_raw <- old_saba_raw |>
+    bind_rows(new_saba_raw_filtered)
+
+  write_csv(
+    all_saba_raw,
+    file = file.path(here(), "data_raw", "all_saba.csv"),
+    append = FALSE
+  )
 } else {
   all_saba_raw <- read_csv(file = file.path(here(), "data_raw", "all_saba.csv"))
 }
@@ -115,7 +185,7 @@ links <- links[grep("/bnf/\\d{2,6}/$", links)] |>
   str_remove("/$")
 links <- links[order(nchar(links))]
 
-dates <- seq(as.Date("2021-05-01"), as.Date("2026-04-01"), "months")
+dates <- seq(as.Date("2021-05-01"), as.Date("2026-06-01"), "months")
 
 full_data_grid <- expand_grid(code = links, date = dates) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
@@ -124,9 +194,11 @@ write_rds(full_data_grid, file = "data_raw/full_bnf_grid.rds")
 
 # Helper function to read from the OpenPrescribing API with browser headers to avoid Cloudflare blocks
 read_openprescribing <- function(url) {
-  resp <- GET(url,
-              add_headers(Accept = "application/json"),
-              user_agent("R httr"))
+  resp <- GET(
+    url,
+    add_headers(Accept = "application/json"),
+    user_agent("R httr")
+  )
   stop_for_status(resp)
   content(resp, as = "text", encoding = "UTF-8")
 }
@@ -144,20 +216,26 @@ download_bnf_grid <- function(grid_df) {
         grid_df$date[i],
         "&format=csv"
       )
-      tryCatch({
-        csv_text <- read_openprescribing(url)
-        
-        # Verify response looks like a CSV (not empty and not HTML)
-        if (nchar(csv_text) > 50 && !grepl("<!DOCTYPE html>", csv_text, fixed = TRUE)) {
-          writeLines(csv_text, dest, useBytes = TRUE)
-          Sys.sleep(0.1) # be considerate to the API rate limit
-        } else {
-          warning(paste("Invalid file content returned for:", url))
+      tryCatch(
+        {
+          csv_text <- read_openprescribing(url)
+
+          # Verify response looks like a CSV (not empty and not HTML)
+          if (
+            nchar(csv_text) > 50 &&
+              !grepl("<!DOCTYPE html>", csv_text, fixed = TRUE)
+          ) {
+            writeLines(csv_text, dest, useBytes = TRUE)
+            Sys.sleep(0.1) # be considerate to the API rate limit
+          } else {
+            warning(paste("Invalid file content returned for:", url))
+          }
+        },
+        error = function(e) {
+          warning(paste("Failed to download:", url, "-", e$message))
+          if (file.exists(dest)) file.remove(dest)
         }
-      }, error = function(e) {
-        warning(paste("Failed to download:", url, "-", e$message))
-        if (file.exists(dest)) file.remove(dest)
-      })
+      )
     }
   }
 }
@@ -186,7 +264,10 @@ download_bnf_grid(mont_data_grid)
 #| warning: false
 #| message: false
 
-mont_data_grid_anx_antd <- expand_grid(code = c("0403", "040102"), date = dates) |>
+mont_data_grid_anx_antd <- expand_grid(
+  code = c("0403", "040102"),
+  date = dates
+) |>
   mutate(group = nchar(code), file.name = paste0(code, "_", date, ".csv"))
 
 download_bnf_grid(mont_data_grid_anx_antd)

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -12,10 +12,13 @@
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -74,10 +77,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-787e033c7b6f65c9dfccb6078e5d2d34.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-261e60fdf64a0e003ec2340fd2db30d7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -221,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmds_ghpages/fingertips_trends.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Under 19 yrs hospital admissions for asthma</span></a>
+ <span class="menu-text">Fingertips health trends</span></a>
   </div>
 </li>
       </ul>
@@ -354,6 +357,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#profile-discovery" id="toc-profile-discovery" class="nav-link" data-scroll-target="#profile-discovery">Profile Discovery</a></li>
   <li><a href="#asthma-indicators" id="toc-asthma-indicators" class="nav-link" data-scroll-target="#asthma-indicators">Asthma Indicators</a></li>
   <li><a href="#respiratory-disease-indicators" id="toc-respiratory-disease-indicators" class="nav-link" data-scroll-target="#respiratory-disease-indicators">Respiratory Disease Indicators</a></li>
+  <li><a href="#cardiovascular-disease" id="toc-cardiovascular-disease" class="nav-link" data-scroll-target="#cardiovascular-disease">Cardiovascular disease</a></li>
+  <li><a href="#adult-mental-health" id="toc-adult-mental-health" class="nav-link" data-scroll-target="#adult-mental-health">Adult Mental Health</a></li>
   <li><a href="#indicator-selection" id="toc-indicator-selection" class="nav-link" data-scroll-target="#indicator-selection">Indicator Selection</a></li>
   <li><a href="#area-type-mapping" id="toc-area-type-mapping" class="nav-link" data-scroll-target="#area-type-mapping">Area Type Mapping</a></li>
   <li><a href="#geographic-classifications" id="toc-geographic-classifications" class="nav-link" data-scroll-target="#geographic-classifications">Geographic Classifications</a></li>
@@ -402,13 +407,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Show the code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">"remotes"</span>)) {</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"remotes"</span>)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sf"</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tidyverse"</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"here"</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"tmap"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"here"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tmap"</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_cran</span>(pkgs)</span>
@@ -421,11 +426,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details class="code-fold">
 <summary>Show the code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span>(<span class="st">"fingertipsR"</span> <span class="sc">%in%</span> <span class="fu">installed.packages</span>())) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"rOpenSci/fingertipsR"</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">build_vignettes =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"rOpenSci/fingertipsR"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">build_vignettes =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fingertipsR)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -465,8 +470,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_asthma <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">DomainID =</span> <span class="dv">8000009</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_asthma <span class="sc">|&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -551,8 +556,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_resp <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">ProfileID =</span> <span class="dv">29</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_resp <span class="sc">|&gt;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -659,6 +664,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+</section>
+<section id="cardiovascular-disease" class="level3">
+<h3 class="anchored" data-anchor-id="cardiovascular-disease">Cardiovascular disease</h3>
 <p>Obtaining indicators for broader cardiovascular disease using profile code 135.</p>
 <div class="cell">
 <details class="code-fold">
@@ -666,8 +674,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_cardio <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">ProfileID =</span> <span class="dv">135</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_cardio <span class="sc">|&gt;</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -775,16 +783,134 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+<section id="adult-mental-health" class="level3">
+<h3 class="anchored" data-anchor-id="adult-mental-health">Adult Mental Health</h3>
+<p>Obtaining indicators for mental health using profile code 50.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show the code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>indicator_lst_mhealth <span class="ot">&lt;-</span> <span class="fu">indicators</span>(<span class="at">ProfileID =</span> <span class="dv">50</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>indicator_lst_mhealth <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 57%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">IndicatorID</th>
+<th style="text-align: left;">IndicatorName</th>
+<th style="text-align: right;">DomainID</th>
+<th style="text-align: left;">DomainName</th>
+<th style="text-align: right;">ProfileID</th>
+<th style="text-align: left;">ProfileName</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">848</td>
+<td style="text-align: left;">Depression: QOF prevalence</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">22301</td>
+<td style="text-align: left;">Self reported wellbeing: people with a low satisfaction score</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">22302</td>
+<td style="text-align: left;">Self reported wellbeing: people with a low worthwhile score</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">22303</td>
+<td style="text-align: left;">Self reported wellbeing: people with a low happiness score</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">22304</td>
+<td style="text-align: left;">Self reported wellbeing: people with a high anxiety score</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">90413</td>
+<td style="text-align: left;">People subject to Mental Health Act: rate per 100,000 population aged 18+ (end of quarter snapshot)</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">90593</td>
+<td style="text-align: left;">IAPT recovery: % of people who have completed IAPT treatment who are “moving to recovery”</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">90600</td>
+<td style="text-align: left;">Patients with severe mental health issues having a comprehensive care plan (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">90617</td>
+<td style="text-align: left;">Smoking cessation support and treatment offered to patients with certain conditions (denominator incl.&nbsp;PCAs)</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">90646</td>
+<td style="text-align: left;">Depression: QOF incidence - new diagnosis</td>
+<td style="text-align: right;">1938133452</td>
+<td style="text-align: left;">Key indicators</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Adult mental health and wellbeing</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
 <section id="indicator-selection" class="level3">
 <h3 class="anchored" data-anchor-id="indicator-selection">Indicator Selection</h3>
 <p>Creating an object for the Hospital Admissions indicator.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sel_indicator &lt;- indicator_lst_resp |&gt;</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   pull(IndicatorID)</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>sel_indicator <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">90810</span>, <span class="dv">90986</span>, <span class="dv">212</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sel_indicator &lt;- indicator_lst_resp |&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   pull(IndicatorID)</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>sel_indicator <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">90810</span>, <span class="dv">90986</span>, <span class="dv">212</span>, <span class="dv">91167</span>, <span class="dv">262</span>, <span class="dv">90987</span>, <span class="dv">90988</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -794,10 +920,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    bind_rows,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lapply</span>(sel_indicator, \(x) <span class="fu">indicator_areatypes</span>(<span class="at">IndicatorID =</span> x))</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  bind_rows,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(sel_indicator, \(x) <span class="fu">indicator_areatypes</span>(<span class="at">IndicatorID =</span> x))</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -807,7 +933,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>area_ty_lst <span class="ot">&lt;-</span> <span class="fu">area_types</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>area_ty_lst <span class="ot">&lt;-</span> <span class="fu">area_types</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -817,29 +943,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>area_avail_ind_names <span class="ot">&lt;-</span> area_avail_ind <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        indicator_lst_resp <span class="sc">|&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(IndicatorID, IndicatorName) <span class="sc">|&gt;</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">unique</span>(),</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">join_by</span>(IndicatorID)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        area_ty_lst <span class="sc">|&gt;</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(AreaTypeID, AreaTypeName) <span class="sc">|&gt;</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">unique</span>(),</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">join_by</span>(AreaTypeID)</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(area_avail_ind_names, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>IndicatorID, <span class="sc">-</span>AreaTypeID) <span class="sc">|&gt;</span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>all_indicators_lst <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  indicator_lst_asthma,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  indicator_lst_resp,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  indicator_lst_cardio,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  indicator_lst_mhealth</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(IndicatorID, IndicatorName) <span class="sc">|&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>area_avail_ind_names <span class="ot">&lt;-</span> area_avail_ind <span class="sc">|&gt;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    all_indicators_lst,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(IndicatorID)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    area_ty_lst <span class="sc">|&gt;</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(AreaTypeID, AreaTypeName) <span class="sc">|&gt;</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">unique</span>(),</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">join_by</span>(AreaTypeID)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(area_avail_ind_names, <span class="at">n =</span> <span class="dv">15</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>IndicatorID, <span class="sc">-</span>AreaTypeID) <span class="sc">|&gt;</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 59%">
-<col style="width: 40%">
+<col style="width: 60%">
+<col style="width: 39%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -850,63 +983,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Counties &amp; UAs (2020/21)</td>
+<td style="text-align: left;">Districts &amp; UAs (2020/21)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">ICBs</td>
+<td style="text-align: left;">Hospital admissions due to stroke</td>
+<td style="text-align: left;">England</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">NHS regions</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Stroke: QOF prevalence</td>
 <td style="text-align: left;">PCNs (v. 26/06/25)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">England</td>
+<td style="text-align: left;">Stroke: QOF prevalence</td>
+<td style="text-align: left;">ICB sub-locations</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">ICBs</td>
+<td style="text-align: left;">Heart Failure: QOF prevalence</td>
+<td style="text-align: left;">Regions (statistical)</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Counties &amp; UAs (2020/21)</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
 <td style="text-align: left;">Districts &amp; UAs (from Apr 2023)</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">England</td>
-</tr>
 <tr class="even">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
-<td style="text-align: left;">Regions (statistical)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">NA</td>
-<td style="text-align: left;">Regions (statistical)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Hospital admissions due to coronary heart disease</td>
 <td style="text-align: left;">Counties &amp; UAs (from Apr 2023)</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;">Stroke: QOF prevalence</td>
+<td style="text-align: left;">ICBs</td>
+</tr>
 <tr class="even">
-<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Stroke: QOF prevalence</td>
 <td style="text-align: left;">Counties &amp; UAs (2021/22-2022/23)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stroke: QOF prevalence</td>
+<td style="text-align: left;">NHS regions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Heart Failure: QOF prevalence</td>
+<td style="text-align: left;">ICB sub-locations</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
 <td style="text-align: left;">NHS regions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stroke: QOF prevalence</td>
+<td style="text-align: left;">England</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hospital admissions for asthma (under 19 years)</td>
+<td style="text-align: left;">Regions (statistical)</td>
 </tr>
 </tbody>
 </table>
@@ -919,20 +1052,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>temp_data <span class="ot">&lt;-</span> <span class="fu">fingertips_data</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">IndicatorID =</span> sel_indicator,</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">AreaTypeID =</span> <span class="st">"All"</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>temp_data <span class="sc">|&gt;</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sample_n</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>temp_data <span class="ot">&lt;-</span> <span class="fu">fingertips_data</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">IndicatorID =</span> sel_indicator,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">AreaTypeID =</span> <span class="st">"All"</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>temp_data <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(temp_data, <span class="st">"data_raw/fingertips_data.csv"</span>, <span class="at">append =</span> F)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(temp_data, <span class="st">"data_raw/fingertips_data.csv"</span>, <span class="at">append =</span> F)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 

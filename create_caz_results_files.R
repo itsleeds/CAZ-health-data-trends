@@ -33,10 +33,10 @@ for (caz in caz_names) {
 
   modified_content <- template_content
 
-  modified_content[4] <- str_replace(
-    modified_content[4],
-    "\"Sheffield\"",
-    paste0('"', caz, '"')
+  modified_content <- str_replace(
+    modified_content,
+    'current_caz: "[^"]*"',
+    paste0('current_caz: "', caz, '"')
   )
 
   # Write to file

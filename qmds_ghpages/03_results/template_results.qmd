@@ -138,5 +138,29 @@ We plot the recorded QOF prevalence percentage of stroke (all ages) in `{r} para
 
 ![](../figures/admissions_212_`{r} gsub(" ", "_", params$current_caz)`.png)
 
+### Stroke Mortality (<75)
+
+We plot the directly age-standardised mortality rate from stroke for persons aged under 75 years in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_91167_`{r} gsub(" ", "_", params$current_caz)`.png)
+
+### Heart Failure Admissions
+
+We plot emergency hospital admissions due to heart failure for all ages in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_90987_`{r} gsub(" ", "_", params$current_caz)`.png)
+
+### Heart Failure Prevalence (QOF)
+
+We plot the recorded QOF prevalence percentage of heart failure (all ages) in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_262_`{r} gsub(" ", "_", params$current_caz)`.png)
+
+### Coronary Heart Disease Admissions
+
+We plot emergency hospital admissions due to coronary heart disease for all ages in `{r} params$current_caz`. The plot includes a dashed control line representing trends in non-CAZ districts for comparison.
+
+![](../figures/admissions_90988_`{r} gsub(" ", "_", params$current_caz)`.png)
+
 :::
 

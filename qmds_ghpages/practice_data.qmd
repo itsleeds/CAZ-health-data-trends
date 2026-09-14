@@ -28,7 +28,7 @@ options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!require("remotes")) {
   install.packages("remotes")
 }
-pkgs = c(
+pkgs <- c(
   "sf",
   "tidyverse",
   "here",
@@ -62,11 +62,14 @@ if (!file.exists("data_raw/subicb_boundaries.gpkg")) {
     append = FALSE
   )
 } else {
-  subicb_boundaries <- st_read(file.path(
-    here(),
-    "data_raw",
-    "subicb_boundaries.gpkg"
-  ), quiet = TRUE)
+  subicb_boundaries <- st_read(
+    file.path(
+      here(),
+      "data_raw",
+      "subicb_boundaries.gpkg"
+    ),
+    quiet = TRUE
+  )
 }
 ```
 
@@ -96,7 +99,10 @@ if (!file.exists("data_raw/gp_locations.gpkg")) {
     append = FALSE
   )
 } else {
-  all_practices <- st_read(file.path(here(), "data_raw", "gp_locations.gpkg"), quiet = TRUE)
+  all_practices <- st_read(
+    file.path(here(), "data_raw", "gp_locations.gpkg"),
+    quiet = TRUE
+  )
 }
 ```
 
@@ -108,7 +114,10 @@ Loading previously created CAZ buffer zones for spatial analysis.
 ```{r}
 #| label: load-caz-buffers
 
-caz_buffers <- st_read(file.path(here(), "data_raw", "CAZ_buffers.gpkg"), quiet = TRUE)
+caz_buffers <- st_read(
+  file.path(here(), "data_raw", "CAZ_buffers.gpkg"),
+  quiet = TRUE
+)
 ```
 
 Identifying GP practices located within CAZ buffer zones.
@@ -161,7 +170,6 @@ tm_shape(caz_buffers |> arrange(-buffer_km)) +
   ) +
   tm_shape(caz_practices) +
   tm_dots("CAZ_name")
-
 ```
 
 ```{r}
@@ -187,7 +195,7 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients.csv"))) {
   get_patients <- function() {
     base_u <- "https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/"
 
-    my_grid <- expand.grid(month = tolower(month.name), year = 2020:2024)
+    my_grid <- expand.grid(month = tolower(month.name), year = 2020:2026)
     my_grid$u <- paste(my_grid$month, my_grid$year, sep = "-")
 
     folder_path <- "gp_patients"
@@ -206,13 +214,30 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients.csv"))) {
 
       my_link <- links[grep(links, pattern = "gp-reg-pat-prac-all")]
 
-      download.file(
-        url = my_link,
-        destfile = paste0(folder_path, "/", i, ".", tools::file_ext(my_link)),
-        mode = "wb"
-      )
+      dest_file <-
+        if (
+          !file.exists(paste0(
+            folder_path,
+            "/",
+            i,
+            ".",
+            tools::file_ext(my_link)
+          ))
+        ) {
+          download.file(
+            url = my_link,
+            destfile = paste0(
+              folder_path,
+              "/",
+              i,
+              ".",
+              tools::file_ext(my_link)
+            ),
+            mode = "wb"
+          )
 
-      Sys.sleep(rnorm(1, mean = 5))
+          Sys.sleep(rnorm(1, mean = 5))
+        }
     }
 
     # List all ZIP files in the folder
@@ -301,7 +326,6 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients.csv"))) {
     )
   )
 }
-
 ```
 
 We can also download data to know the number of registered patients by year of age and sex 
@@ -313,7 +337,7 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients_age.csv"))) {
   get_patients <- function() {
     base_u <- "https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/"
 
-    my_grid <- expand.grid(month = tolower(month.name), year = 2020:2024)
+    my_grid <- expand.grid(month = tolower(month.name), year = 2020:2026)
     my_grid$u <- paste(my_grid$month, my_grid$year, sep = "-")
 
     folder_path <- "gp_patients_age"
@@ -338,22 +362,25 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients_age.csv"))) {
       for (tlink in my_link) {
         j <- str_extract(tlink, pattern = "(fe)?male")
 
-        download.file(
-          url = tlink,
-          destfile = paste0(
-            folder_path,
-            "/",
-            i,
-            "-",
-            j,
-            ".",
-            tools::file_ext(tlink)
-          ),
-          mode = "wb"
+        dest_file <- paste0(
+          folder_path,
+          "/",
+          i,
+          "-",
+          j,
+          ".",
+          tools::file_ext(tlink)
         )
-      }
 
-      Sys.sleep(rnorm(1, mean = 5))
+        if (!file.exists(dest_file)) {
+          download.file(
+            url = tlink,
+            destfile = dest_file,
+            mode = "wb"
+          )
+          Sys.sleep(rnorm(1, mean = 5))
+        }
+      }
     }
 
     # List all ZIP files in the folder
@@ -418,7 +445,7 @@ if (!file.exists(file.path(here(), "data_raw", "practice_patients_age.csv"))) {
     ) |>
       mutate(year = as.integer(year))
 
-    all_data_df_age = data.table::as.data.table(all_data_df_age)
+    all_data_df_age <- data.table::as.data.table(all_data_df_age)
 
     all_data_df_age[,
       AGE_GROUP := cut(
@@ -508,7 +535,7 @@ practice_avg_age <- as.data.table(all_data_df_age)[,
 National mean age distribution
 ```{r}
 practice_avg_age |>
-  filter(year == 2024, month == "december") |>
+  filter(year == 2025, month == "december") |>
   ggplot(aes(mean_age)) +
   stat_ecdf() +
   theme_minimal()
@@ -519,7 +546,7 @@ Spatial distribution
 sf_practices_age <- all_practices |>
   left_join(
     practice_avg_age |>
-      filter(year == 2024, month == "december"),
+      filter(year == 2025, month == "december"),
     by = c("code" = "ORG_CODE")
   ) |>
   drop_na()
@@ -530,5 +557,4 @@ sf_practices_age |>
   geom_sf(alpha = 0.7) +
   theme_void() +
   scale_color_continuous(palette = "viridis")
-
 ```

@@ -3,7 +3,7 @@ title: "Analysis of Fingertips data"
 format: html
 ---
 
-This file presents an analysis of hospital admissions data for districts with Clean Air Zones (CAZ) in England. The aim is to explore health trends, focusing on hospital admissions of under-19-year-olds, and to visualise geographical and temporal patterns using publicly available datasets.
+This file presents an analysis of health indicators and hospital admissions data for districts with Clean Air Zones (CAZ) in England. The aim is to explore health trends across respiratory and cardiovascular conditions, and to visualise geographical and temporal patterns using publicly available datasets from the Fingertips platform.
 
 ## Setup
 
@@ -34,11 +34,11 @@ remotes::install_cran(pkgs)
 sapply(pkgs, require, character.only = TRUE)
 ```
 
-## Loading data
+## Data Loading
 
-### Hospital Admissions Data
+### Health Indicators Data
 
-We use hospital admissions data sourced from the Fingertips platform, which provides a wide range of public health indicators. The dataset includes information on admissions by area, age, sex, and time period, allowing for detailed analysis of health outcomes.
+We use hospital admissions and health indicators data sourced from the Fingertips platform, which provides a wide range of public health metrics. The dataset includes information on admissions and prevalence by area, age, sex, and time period, allowing for detailed analysis of health outcomes.
 
 ```{r}
 admissions_data <- read_csv(
@@ -138,7 +138,7 @@ The admissions data is filtered to include only records from districts with CAZ 
 
 ```{r}
 # Select the indicators we want to plot
-sel_indicators <- c(90810, 90986, 212)
+sel_indicators <- c(90810, 90986, 212, 91167, 90987, 262, 90988)
 
 # Create a robust lookup mapping for ONS Area Codes to human-readable CAZ names
 caz_lookup <- tibble(
@@ -331,6 +331,162 @@ p_prev <- df_plot_prev |>
 ggplotly(p_prev)
 ```
 
+#### Under 75 Stroke Mortality
+
+**Indicator ID:** 91167 — Under 75 mortality rate from stroke
+
+This indicator shows the directly age-standardised mortality rate from stroke in persons aged under 75 years, expressed per 100,000 population.
+
+```{r}
+#| label: plot-stroke-mortality
+#| warning: false
+#| message: false
+
+df_plot_mort <- CAZ_admissions |> filter(IndicatorID == 91167, Sex == "Persons")
+breaks_mort <- sort(unique(df_plot_mort$TimeperiodSortable))
+
+p_mort <- df_plot_mort |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 91167),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_mort,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Under 75 Mortality Rate from Stroke",
+    y = "per 100,000",
+    x = NULL
+  )
+
+ggplotly(p_mort)
+```
+
+#### Heart Failure Admissions
+
+**Indicator ID:** 90987 — Hospital admissions due to heart failure
+
+This indicator shows the rate of emergency hospital admissions due to heart failure for all ages, expressed per 100,000 population.
+
+```{r}
+#| label: plot-hf-admissions
+#| warning: false
+#| message: false
+
+df_plot_hf <- CAZ_admissions |> filter(IndicatorID == 90987, Sex == "Persons")
+breaks_hf <- sort(unique(df_plot_hf$TimeperiodSortable))
+
+p_hf <- df_plot_hf |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 90987),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_hf,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Hospital Admissions due to Heart Failure",
+    y = "per 100,000",
+    x = NULL
+  )
+
+ggplotly(p_hf)
+```
+
+#### Heart Failure Prevalence (QOF)
+
+**Indicator ID:** 262 — Heart Failure: QOF prevalence
+
+This indicator shows the percentage of patients on the GP register with a diagnosis of heart failure (Quality and Outcomes Framework), representing overall prevalence in the population.
+
+```{r}
+#| label: plot-hf-prevalence
+#| warning: false
+#| message: false
+
+df_plot_hf_prev <- CAZ_admissions |> filter(IndicatorID == 262, Sex == "Persons")
+breaks_hf_prev <- sort(unique(df_plot_hf_prev$TimeperiodSortable))
+
+p_hf_prev <- df_plot_hf_prev |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 262),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_hf_prev,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Heart Failure: QOF Prevalence",
+    y = "Prevalence (%)",
+    x = NULL
+  )
+
+ggplotly(p_hf_prev)
+```
+
+#### Coronary Heart Disease Admissions
+
+**Indicator ID:** 90988 — Hospital admissions due to coronary heart disease
+
+This indicator shows the rate of emergency hospital admissions due to coronary heart disease for all ages, expressed per 100,000 population.
+
+```{r}
+#| label: plot-chd-admissions
+#| warning: false
+#| message: false
+
+df_plot_chd <- CAZ_admissions |> filter(IndicatorID == 90988, Sex == "Persons")
+breaks_chd <- sort(unique(df_plot_chd$TimeperiodSortable))
+
+p_chd <- df_plot_chd |>
+  ggplot(aes(x = TimeperiodSortable, y = Value, col = CAZName)) +
+  geom_line(
+    data = admissions_control |> filter(IndicatorID == 90988),
+    col = "black",
+    linetype = "dashed"
+  ) +
+  geom_line() +
+  scale_x_continuous(
+    breaks = breaks_chd,
+    labels = \(x) timeperiod_labels[as.character(x)]
+  ) +
+  facet_grid(Age ~ ., scales = "free_y") +
+  theme_light() +
+  scale_color_discrete(type = "qual", palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Hospital Admissions due to Coronary Heart Disease",
+    y = "per 100,000",
+    x = NULL
+  )
+
+ggplotly(p_chd)
+```
+
 :::
 
 ### Data Table
@@ -409,14 +565,14 @@ for (caz_row in seq_len(nrow(caz_lookup))) {
     units = "cm"
   )
   
-  # 2. Save individual plots for all indicators (including 90810, 90986, 212)
+  # 2. Save individual plots for all indicators (including 90810, 90986, 212, 91167, 90987, 262, 90988)
   for (ind in sel_indicators) {
     ind_name <- admissions_data |>
       filter(IndicatorID == ind) |>
       pull(IndicatorName) |>
       unique()
     
-    y_label <- ifelse(ind == 212, "Prevalence (%)", "per 100,000")
+    y_label <- ifelse(ind %in% c(212, 262), "Prevalence (%)", "per 100,000")
     
     df_plot_ind_caz <- CAZ_admissions |> 
       filter(IndicatorID == ind, AreaCode == caz_code, Sex == "Persons")

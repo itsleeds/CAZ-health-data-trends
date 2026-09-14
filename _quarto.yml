@@ -37,7 +37,7 @@ website:
           - href: qmds_ghpages/Corr_analysis.qmd
             text: Correlation Analysis
           - href: qmds_ghpages/fingertips_trends.qmd
-            text: Under 19 yrs hospital admissions for asthma
+            text: Fingertips health trends
       - section: CAZ Results
         contents:
           - href: qmds_ghpages/03_results/Sheffield_results.qmd

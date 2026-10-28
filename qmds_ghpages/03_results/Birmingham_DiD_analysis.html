@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.10.18">
+<meta name="generator" content="quarto-1.10.19">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -77,7 +77,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-261e60fdf64a0e003ec2340fd2db30d7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -559,9 +559,9 @@ Warning
 <tr class="even">
 <td style="text-align: left;">Control</td>
 <td style="text-align: left;">Post-CAZ</td>
-<td style="text-align: right;">48</td>
-<td style="text-align: right;">74.94</td>
-<td style="text-align: right;">3.38</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">71.07</td>
+<td style="text-align: right;">7.65</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Birmingham</td>
@@ -573,9 +573,9 @@ Warning
 <tr class="even">
 <td style="text-align: left;">Birmingham</td>
 <td style="text-align: left;">Post-CAZ</td>
-<td style="text-align: right;">144</td>
-<td style="text-align: right;">57.33</td>
-<td style="text-align: right;">12.69</td>
+<td style="text-align: right;">198</td>
+<td style="text-align: right;">54.48</td>
+<td style="text-align: right;">13.31</td>
 </tr>
 </tbody>
 </table>
@@ -765,20 +765,20 @@ lm(formula = inhalers_per_1000 ~ treatment * post, data = did_data)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--22.023  -7.494   2.911   8.454  17.709 
+-28.253 -11.527   3.472   9.155  19.610 
 
 Coefficients:
-                Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)     76.52802    3.90351  19.605  &lt; 2e-16 ***
-treatment      -17.63419    4.50739  -3.912 0.000122 ***
-post            -1.58786    4.21627  -0.377 0.706831    
-treatment:post   0.02084    4.86853   0.004 0.996589    
+               Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)      76.528      4.239  18.054  &lt; 2e-16 ***
+treatment       -17.634      4.895  -3.603  0.00037 ***
+post             -5.455      4.488  -1.215  0.22521    
+treatment:post    1.041      5.183   0.201  0.84101    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 11.04 on 220 degrees of freedom
-Multiple R-squared:  0.3282,    Adjusted R-squared:  0.319 
-F-statistic: 35.83 on 3 and 220 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 11.99 on 292 degrees of freedom
+Multiple R-squared:  0.2775,    Adjusted R-squared:  0.2701 
+F-statistic: 37.38 on 3 and 292 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -809,12 +809,12 @@ F-statistic: 35.83 on 3 and 220 DF,  p-value: &lt; 2.2e-16</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">treatment:post</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.869</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.574</td>
-<td style="text-align: right;">9.616</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">5.183</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">-9.16</td>
+<td style="text-align: right;">11.241</td>
 </tr>
 </tbody>
 </table>
@@ -841,21 +841,21 @@ lm(formula = inhalers_per_1000 ~ treatment * post + time_to_treatment,
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--21.423  -7.546   2.782   8.455  17.730 
+-22.692 -10.247   2.271   8.516  19.701 
 
 Coefficients:
                    Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)        76.33992    3.91638  19.492  &lt; 2e-16 ***
-treatment         -17.63419    4.51228  -3.908 0.000124 ***
-post               -0.42451    4.51676  -0.094 0.925207    
-time_to_treatment  -0.04157    0.05745  -0.723 0.470146    
-treatment:post      0.02084    4.87381   0.004 0.996592    
+(Intercept)        75.46940    3.97492  18.986  &lt; 2e-16 ***
+treatment         -17.63419    4.58593  -3.845 0.000148 ***
+post                3.19782    4.41405   0.724 0.469363    
+time_to_treatment  -0.23393    0.03626  -6.451 4.61e-10 ***
+treatment:post      1.04056    4.85591   0.214 0.830473    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 11.05 on 219 degrees of freedom
-Multiple R-squared:  0.3298,    Adjusted R-squared:  0.3176 
-F-statistic: 26.94 on 4 and 219 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 11.23 on 291 degrees of freedom
+Multiple R-squared:  0.3679,    Adjusted R-squared:  0.3592 
+F-statistic: 42.34 on 4 and 291 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -886,12 +886,12 @@ F-statistic: 26.94 on 4 and 219 DF,  p-value: &lt; 2.2e-16</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">treatment:post</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.874</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.585</td>
-<td style="text-align: right;">9.626</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">4.856</td>
+<td style="text-align: right;">0.214</td>
+<td style="text-align: right;">0.83</td>
+<td style="text-align: right;">-8.517</td>
+<td style="text-align: right;">10.598</td>
 </tr>
 </tbody>
 </table>
@@ -918,31 +918,31 @@ lm(formula = inhalers_per_1000 ~ treatment * post + factor(month),
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--23.874  -6.768   2.915   8.211  15.986 
+-26.783 -11.965   3.079   9.814  18.134 
 
 Coefficients:
-                 Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)      78.08864    4.90434  15.922  &lt; 2e-16 ***
-treatment       -17.63419    4.53043  -3.892 0.000133 ***
-post             -1.16585    4.27550  -0.273 0.785367    
-factor(month)2   -5.77605    3.92347  -1.472 0.142477    
-factor(month)3   -0.98297    3.92347  -0.251 0.802420    
-factor(month)4   -4.54758    3.92347  -1.159 0.247750    
-factor(month)5   -2.61962    3.74789  -0.699 0.485355    
-factor(month)6   -2.05488    3.74789  -0.548 0.584087    
-factor(month)7   -2.59196    3.74789  -0.692 0.489970    
-factor(month)8   -5.65390    3.74789  -1.509 0.132923    
-factor(month)9    0.16233    3.74789   0.043 0.965495    
-factor(month)10   0.11326    3.74789   0.030 0.975920    
-factor(month)11  -0.86528    3.74789  -0.231 0.817640    
-factor(month)12   1.02513    3.74789   0.274 0.784722    
-treatment:post    0.02084    4.89343   0.004 0.996606    
+                Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)      78.3084     4.9776  15.732  &lt; 2e-16 ***
+treatment       -17.6342     4.8906  -3.606 0.000368 ***
+post             -4.8557     4.5197  -1.074 0.283595    
+factor(month)2   -6.3971     3.4581  -1.850 0.065385 .  
+factor(month)3   -2.0648     3.4581  -0.597 0.550940    
+factor(month)4   -4.6744     3.4581  -1.352 0.177555    
+factor(month)5   -3.3566     3.3487  -1.002 0.317031    
+factor(month)6   -3.6702     3.3487  -1.096 0.274014    
+factor(month)7   -2.1541     3.4795  -0.619 0.536370    
+factor(month)8   -5.6350     3.4795  -1.619 0.106471    
+factor(month)9    0.3223     3.4795   0.093 0.926261    
+factor(month)10   0.2864     3.4795   0.082 0.934453    
+factor(month)11  -1.1696     3.4795  -0.336 0.737025    
+factor(month)12   1.1332     3.4795   0.326 0.744902    
+treatment:post    1.0406     5.1785   0.201 0.840891    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 11.1 on 209 degrees of freedom
-Multiple R-squared:  0.3553,    Adjusted R-squared:  0.3121 
-F-statistic: 8.226 on 14 and 209 DF,  p-value: 5.939e-14</code></pre>
+Residual standard error: 11.98 on 281 degrees of freedom
+Multiple R-squared:  0.3058,    Adjusted R-squared:  0.2712 
+F-statistic: 8.843 on 14 and 281 DF,  p-value: 5.954e-16</code></pre>
 </div>
 <details class="code-fold">
 <summary>Show the code</summary>
@@ -973,12 +973,12 @@ F-statistic: 8.226 on 14 and 209 DF,  p-value: 5.939e-14</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">treatment:post</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.893</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.626</td>
-<td style="text-align: right;">9.668</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">5.178</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">-9.153</td>
+<td style="text-align: right;">11.234</td>
 </tr>
 </tbody>
 </table>
@@ -1022,30 +1022,30 @@ F-statistic: 8.226 on 14 and 209 DF,  p-value: 5.939e-14</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Basic DiD</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.869</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.574</td>
-<td style="text-align: right;">9.616</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">5.183</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">-9.160</td>
+<td style="text-align: right;">11.241</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">With Time Trend</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.874</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.585</td>
-<td style="text-align: right;">9.626</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">4.856</td>
+<td style="text-align: right;">0.214</td>
+<td style="text-align: right;">0.830</td>
+<td style="text-align: right;">-8.517</td>
+<td style="text-align: right;">10.598</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">With Month FE</td>
-<td style="text-align: right;">0.021</td>
-<td style="text-align: right;">4.893</td>
-<td style="text-align: right;">0.004</td>
-<td style="text-align: right;">0.997</td>
-<td style="text-align: right;">-9.626</td>
-<td style="text-align: right;">9.668</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">5.178</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">-9.153</td>
+<td style="text-align: right;">11.234</td>
 </tr>
 </tbody>
 </table>
@@ -1054,18 +1054,18 @@ F-statistic: 8.226 on 14 and 209 DF,  p-value: 5.939e-14</code></pre>
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<p><strong>DiD Estimate:</strong> 0.021 inhalers per 1,000 patients (95% CI: [-9.574, 9.616])</p>
-<p><strong>P-value:</strong> 0.997</p>
+<p><strong>DiD Estimate:</strong> 1.041 inhalers per 1,000 patients (95% CI: [-9.160, 11.241])</p>
+<p><strong>P-value:</strong> 0.841</p>
 <p><strong>Statistical Significance:</strong> Not statistically significant at 5% level</p>
 <section id="key-findings" class="level3">
 <h3 class="anchored" data-anchor-id="key-findings">Key Findings</h3>
 <ol type="1">
 <li><p><strong>Direction</strong>: The estimate indicates a positive effect on inhaler prescriptions</p></li>
-<li><p><strong>Magnitude</strong>: The CAZ is associated with a change of approximately 0.02 inhalers per 1,000 patients</p></li>
+<li><p><strong>Magnitude</strong>: The CAZ is associated with a change of approximately 1.04 inhalers per 1,000 patients</p></li>
 <li><p><strong>Robustness</strong>: The estimate is stable across different model specifications</p></li>
 </ol>
 <hr>
-<p><em>Results produced on: 2026-02-05</em></p>
+<p><em>Results produced on: 2026-10-28</em></p>
 
 
 </section>
